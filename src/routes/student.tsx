@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   BookOpen,
@@ -27,6 +27,7 @@ const NAV: NavItem[] = [
 
 function StudentLayout() {
   const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     const session = getSession();
     if (!session) {
@@ -36,9 +37,12 @@ function StudentLayout() {
     if (session.role !== "student") {
       toast("Access denied — redirecting to your dashboard");
       navigate({ to: `/${session.role}/dashboard` });
+      return;
     }
+    setReady(true);
   }, [navigate]);
 
+  if (!ready) return null;
   return (
     <RoleShell role="student" nav={NAV}>
       <Outlet />

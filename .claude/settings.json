@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://kcg-demo.pages.dev/assets/index-Bd_9_EhW.js)",
+      "Bash(curl -s https://kcg-demo.pages.dev/teacher/dashboard)"
+    ]
+  }
+}

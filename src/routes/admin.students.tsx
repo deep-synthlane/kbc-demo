@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search, Download, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -87,8 +87,10 @@ function AdminStudents() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button size="sm" variant="ghost">
-                    <Eye className="h-3.5 w-3.5 mr-1.5" /> View
+                  <Button size="sm" variant="ghost" asChild>
+                    <Link to="/admin/students/$studentId" params={{ studentId: s.slug }}>
+                      <Eye className="h-3.5 w-3.5 mr-1.5" /> View
+                    </Link>
                   </Button>
                 </TableCell>
               </TableRow>

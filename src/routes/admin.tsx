@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   FileCheck,
@@ -32,6 +32,7 @@ const NAV: NavItem[] = [
 
 function AdminLayout() {
   const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     const session = getSession();
     if (!session) {
@@ -41,9 +42,12 @@ function AdminLayout() {
     if (session.role !== "admin") {
       toast("Access denied — redirecting to your dashboard");
       navigate({ to: `/${session.role}/dashboard` });
+      return;
     }
+    setReady(true);
   }, [navigate]);
 
+  if (!ready) return null;
   return (
     <RoleShell role="admin" nav={NAV}>
       <Outlet />

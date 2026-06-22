@@ -54,6 +54,7 @@ import { Route as StudentCoursesIndexRouteImport } from './routes/student.course
 import { Route as TeacherCoursesCourseIdRouteImport } from './routes/teacher.courses.$courseId'
 import { Route as StudentQuizQuizIdRouteImport } from './routes/student.quiz.$quizId'
 import { Route as StudentCoursesCourseIdRouteImport } from './routes/student.courses.$courseId'
+import { Route as AdminStudentsStudentIdRouteImport } from './routes/admin.students.$studentId'
 
 const TeacherRoute = TeacherRouteImport.update({
   id: '/teacher',
@@ -280,6 +281,11 @@ const StudentCoursesCourseIdRoute = StudentCoursesCourseIdRouteImport.update({
   path: '/$courseId',
   getParentRoute: () => StudentCoursesRoute,
 } as any)
+const AdminStudentsStudentIdRoute = AdminStudentsStudentIdRouteImport.update({
+  id: '/$studentId',
+  path: '/$studentId',
+  getParentRoute: () => AdminStudentsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -295,7 +301,7 @@ export interface FileRoutesByFullPath {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/examinations': typeof AdminExaminationsRoute
   '/admin/reports': typeof AdminReportsRoute
-  '/admin/students': typeof AdminStudentsRoute
+  '/admin/students': typeof AdminStudentsRouteWithChildren
   '/admin/timetable': typeof AdminTimetableRoute
   '/ai/feedback': typeof AiFeedbackRoute
   '/ai/interview': typeof AiInterviewRoute
@@ -322,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/teacher/examinations': typeof TeacherExaminationsRoute
   '/teacher/live-classes': typeof TeacherLiveClassesRoute
   '/teacher/timetable': typeof TeacherTimetableRoute
+  '/admin/students/$studentId': typeof AdminStudentsStudentIdRoute
   '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
   '/student/quiz/$quizId': typeof StudentQuizQuizIdRoute
   '/teacher/courses/$courseId': typeof TeacherCoursesCourseIdRoute
@@ -342,7 +349,7 @@ export interface FileRoutesByTo {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/examinations': typeof AdminExaminationsRoute
   '/admin/reports': typeof AdminReportsRoute
-  '/admin/students': typeof AdminStudentsRoute
+  '/admin/students': typeof AdminStudentsRouteWithChildren
   '/admin/timetable': typeof AdminTimetableRoute
   '/ai/feedback': typeof AiFeedbackRoute
   '/ai/interview': typeof AiInterviewRoute
@@ -367,6 +374,7 @@ export interface FileRoutesByTo {
   '/teacher/examinations': typeof TeacherExaminationsRoute
   '/teacher/live-classes': typeof TeacherLiveClassesRoute
   '/teacher/timetable': typeof TeacherTimetableRoute
+  '/admin/students/$studentId': typeof AdminStudentsStudentIdRoute
   '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
   '/student/quiz/$quizId': typeof StudentQuizQuizIdRoute
   '/teacher/courses/$courseId': typeof TeacherCoursesCourseIdRoute
@@ -388,7 +396,7 @@ export interface FileRoutesById {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/examinations': typeof AdminExaminationsRoute
   '/admin/reports': typeof AdminReportsRoute
-  '/admin/students': typeof AdminStudentsRoute
+  '/admin/students': typeof AdminStudentsRouteWithChildren
   '/admin/timetable': typeof AdminTimetableRoute
   '/ai/feedback': typeof AiFeedbackRoute
   '/ai/interview': typeof AiInterviewRoute
@@ -415,6 +423,7 @@ export interface FileRoutesById {
   '/teacher/examinations': typeof TeacherExaminationsRoute
   '/teacher/live-classes': typeof TeacherLiveClassesRoute
   '/teacher/timetable': typeof TeacherTimetableRoute
+  '/admin/students/$studentId': typeof AdminStudentsStudentIdRoute
   '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
   '/student/quiz/$quizId': typeof StudentQuizQuizIdRoute
   '/teacher/courses/$courseId': typeof TeacherCoursesCourseIdRoute
@@ -464,6 +473,7 @@ export interface FileRouteTypes {
     | '/teacher/examinations'
     | '/teacher/live-classes'
     | '/teacher/timetable'
+    | '/admin/students/$studentId'
     | '/student/courses/$courseId'
     | '/student/quiz/$quizId'
     | '/teacher/courses/$courseId'
@@ -509,6 +519,7 @@ export interface FileRouteTypes {
     | '/teacher/examinations'
     | '/teacher/live-classes'
     | '/teacher/timetable'
+    | '/admin/students/$studentId'
     | '/student/courses/$courseId'
     | '/student/quiz/$quizId'
     | '/teacher/courses/$courseId'
@@ -556,6 +567,7 @@ export interface FileRouteTypes {
     | '/teacher/examinations'
     | '/teacher/live-classes'
     | '/teacher/timetable'
+    | '/admin/students/$studentId'
     | '/student/courses/$courseId'
     | '/student/quiz/$quizId'
     | '/teacher/courses/$courseId'
@@ -890,8 +902,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentCoursesCourseIdRouteImport
       parentRoute: typeof StudentCoursesRoute
     }
+    '/admin/students/$studentId': {
+      id: '/admin/students/$studentId'
+      path: '/$studentId'
+      fullPath: '/admin/students/$studentId'
+      preLoaderRoute: typeof AdminStudentsStudentIdRouteImport
+      parentRoute: typeof AdminStudentsRoute
+    }
   }
 }
+
+interface AdminStudentsRouteChildren {
+  AdminStudentsStudentIdRoute: typeof AdminStudentsStudentIdRoute
+}
+
+const AdminStudentsRouteChildren: AdminStudentsRouteChildren = {
+  AdminStudentsStudentIdRoute: AdminStudentsStudentIdRoute,
+}
+
+const AdminStudentsRouteWithChildren = AdminStudentsRoute._addFileChildren(
+  AdminStudentsRouteChildren,
+)
 
 interface AdminRouteChildren {
   AdminAdmissionsRoute: typeof AdminAdmissionsRoute
@@ -900,7 +931,7 @@ interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminExaminationsRoute: typeof AdminExaminationsRoute
   AdminReportsRoute: typeof AdminReportsRoute
-  AdminStudentsRoute: typeof AdminStudentsRoute
+  AdminStudentsRoute: typeof AdminStudentsRouteWithChildren
   AdminTimetableRoute: typeof AdminTimetableRoute
 }
 
@@ -911,7 +942,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
   AdminExaminationsRoute: AdminExaminationsRoute,
   AdminReportsRoute: AdminReportsRoute,
-  AdminStudentsRoute: AdminStudentsRoute,
+  AdminStudentsRoute: AdminStudentsRouteWithChildren,
   AdminTimetableRoute: AdminTimetableRoute,
 }
 

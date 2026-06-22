@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LayoutDashboard, ClipboardList, FileSearch, Megaphone, Users } from "lucide-react";
 import { RoleShell, type NavItem } from "@/components/RoleShell";
 import { getSession } from "@/lib/session";
@@ -15,6 +15,7 @@ const NAV: NavItem[] = [
 
 function StaffLayout() {
   const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     const session = getSession();
     if (!session) {
@@ -24,9 +25,12 @@ function StaffLayout() {
     if (session.role !== "staff") {
       toast("Access denied — redirecting to your dashboard");
       navigate({ to: `/${session.role}/dashboard` });
+      return;
     }
+    setReady(true);
   }, [navigate]);
 
+  if (!ready) return null;
   return (
     <RoleShell role="staff" nav={NAV}>
       <Outlet />

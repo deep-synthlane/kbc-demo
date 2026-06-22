@@ -1,0 +1,7 @@
+name = "kbc-demo"
+main = "worker-entry.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat_v2"]
+
+[assets]
+directory = "./dist/client"

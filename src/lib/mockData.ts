@@ -265,13 +265,160 @@ export { APPLICATIONS } from "./admissions";
 export type { AdmissionApplication, ApplicationDocument } from "./admissions";
 
 export const STUDENTS_DIRECTORY = [
-  { id: "KCGU/22/CSE/0184", name: "Ananya Iyer", dept: "CSE", sem: 6, cgpa: 8.74, attendance: 89 },
-  { id: "KCGU/22/CSE/0185", name: "Rahul Verma", dept: "CSE", sem: 6, cgpa: 8.12, attendance: 82 },
-  { id: "KCGU/22/ECE/0091", name: "Priya Nair", dept: "ECE", sem: 6, cgpa: 9.02, attendance: 94 },
-  { id: "KCGU/23/MECH/0040", name: "Imran Khan", dept: "MECH", sem: 4, cgpa: 7.65, attendance: 78 },
-  { id: "KCGU/24/MBA/0018", name: "Ritika Bose", dept: "MBA", sem: 2, cgpa: 8.92, attendance: 91 },
-  { id: "KCGU/23/CIVIL/0022", name: "Suresh Babu", dept: "CIVIL", sem: 4, cgpa: 7.41, attendance: 74 },
+  { slug: "s0", id: "KCGU/22/CSE/0184", name: "Ananya Iyer",  dept: "CSE",   sem: 6, cgpa: 8.74, attendance: 89 },
+  { slug: "s1", id: "KCGU/22/CSE/0185", name: "Rahul Verma",  dept: "CSE",   sem: 6, cgpa: 8.12, attendance: 82 },
+  { slug: "s2", id: "KCGU/22/ECE/0091", name: "Priya Nair",   dept: "ECE",   sem: 6, cgpa: 9.02, attendance: 94 },
+  { slug: "s3", id: "KCGU/23/MECH/0040",name: "Imran Khan",   dept: "MECH",  sem: 4, cgpa: 7.65, attendance: 78 },
+  { slug: "s4", id: "KCGU/24/MBA/0018", name: "Ritika Bose",  dept: "MBA",   sem: 2, cgpa: 8.92, attendance: 91 },
+  { slug: "s5", id: "KCGU/23/CIVIL/0022",name:"Suresh Babu",  dept: "CIVIL", sem: 4, cgpa: 7.41, attendance: 74 },
 ];
+
+export const STUDENT_DETAIL: Record<string, {
+  email: string; phone: string; batch: string; mentor: string; status: string; credits: number; totalCredits: number;
+  transcript: { sem: string; gpa: number; credits: number; status: string }[];
+  courses: { code: string; title: string; faculty: string; grade: string }[];
+  gradeDistribution: { grade: string; count: number }[];
+  timeline: { semester: string; year: string; courses: number; credits: number; status: string }[];
+}> = {
+  s0: {
+    email: "ananya.iyer@kcg.edu.in", phone: "+91 98765 43210", batch: "2022–26", mentor: "Dr. Priya Ramanathan", status: "Active · Good Standing", credits: 120, totalCredits: 160,
+    transcript: [
+      { sem: "Semester 1", gpa: 8.4, credits: 22, status: "Completed" },
+      { sem: "Semester 2", gpa: 8.6, credits: 22, status: "Completed" },
+      { sem: "Semester 3", gpa: 8.9, credits: 24, status: "Completed" },
+      { sem: "Semester 4", gpa: 8.7, credits: 24, status: "Completed" },
+      { sem: "Semester 5", gpa: 8.8, credits: 28, status: "Completed" },
+      { sem: "Semester 6", gpa: 0,   credits: 0,  status: "Ongoing"   },
+    ],
+    courses: [
+      { code: "CSE301", title: "Data Structures",  faculty: "Dr. Priya Ramanathan", grade: "A" },
+      { code: "CSE305", title: "DBMS",             faculty: "Prof. Arjun Krishnan",  grade: "A+" },
+      { code: "CSE402", title: "AI",               faculty: "Dr. Meera Subramanian", grade: "A" },
+      { code: "CSE304", title: "Operating Systems",faculty: "Dr. Karthik Venkatesan",grade: "B+" },
+    ],
+    gradeDistribution: [{ grade:"A+",count:8 },{ grade:"A",count:12 },{ grade:"B+",count:5 },{ grade:"B",count:2 },{ grade:"C",count:1 }],
+    timeline: [
+      { semester:"Semester 1",year:"2022–23",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 2",year:"2022–23",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 3",year:"2023–24",courses:7,credits:24,status:"Completed" },
+      { semester:"Semester 4",year:"2023–24",courses:7,credits:24,status:"Completed" },
+      { semester:"Semester 5",year:"2024–25",courses:8,credits:28,status:"Completed" },
+      { semester:"Semester 6",year:"2025–26",courses:6,credits:0, status:"Ongoing"   },
+    ],
+  },
+  s1: {
+    email: "rahul.verma@kcg.edu.in", phone: "+91 91234 56789", batch: "2022–26", mentor: "Dr. Priya Ramanathan", status: "Active", credits: 108, totalCredits: 160,
+    transcript: [
+      { sem: "Semester 1", gpa: 7.9, credits: 22, status: "Completed" },
+      { sem: "Semester 2", gpa: 8.1, credits: 22, status: "Completed" },
+      { sem: "Semester 3", gpa: 8.2, credits: 24, status: "Completed" },
+      { sem: "Semester 4", gpa: 8.0, credits: 24, status: "Completed" },
+      { sem: "Semester 5", gpa: 8.3, credits: 16, status: "Completed" },
+      { sem: "Semester 6", gpa: 0,   credits: 0,  status: "Ongoing"   },
+    ],
+    courses: [
+      { code: "CSE301", title: "Data Structures",  faculty: "Dr. Priya Ramanathan", grade: "A" },
+      { code: "CSE305", title: "DBMS",             faculty: "Prof. Arjun Krishnan",  grade: "A" },
+      { code: "CSE402", title: "AI",               faculty: "Dr. Meera Subramanian", grade: "B+" },
+      { code: "CSE304", title: "Operating Systems",faculty: "Dr. Karthik Venkatesan",grade: "B+" },
+    ],
+    gradeDistribution: [{ grade:"A+",count:3 },{ grade:"A",count:10 },{ grade:"B+",count:9 },{ grade:"B",count:4 },{ grade:"C",count:2 }],
+    timeline: [
+      { semester:"Semester 1",year:"2022–23",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 2",year:"2022–23",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 3",year:"2023–24",courses:7,credits:24,status:"Completed" },
+      { semester:"Semester 4",year:"2023–24",courses:7,credits:24,status:"Completed" },
+      { semester:"Semester 5",year:"2024–25",courses:5,credits:16,status:"Completed" },
+      { semester:"Semester 6",year:"2025–26",courses:6,credits:0, status:"Ongoing"   },
+    ],
+  },
+  s2: {
+    email: "priya.nair@kcg.edu.in", phone: "+91 99887 76655", batch: "2022–26", mentor: "Prof. Anjali Mehta", status: "Active · Honours", credits: 126, totalCredits: 160,
+    transcript: [
+      { sem: "Semester 1", gpa: 9.1, credits: 22, status: "Completed" },
+      { sem: "Semester 2", gpa: 9.0, credits: 22, status: "Completed" },
+      { sem: "Semester 3", gpa: 9.2, credits: 24, status: "Completed" },
+      { sem: "Semester 4", gpa: 8.9, credits: 24, status: "Completed" },
+      { sem: "Semester 5", gpa: 9.1, credits: 34, status: "Completed" },
+      { sem: "Semester 6", gpa: 0,   credits: 0,  status: "Ongoing"   },
+    ],
+    courses: [
+      { code: "ECE401", title: "VLSI Design",      faculty: "Prof. Anjali Mehta",   grade: "A+" },
+      { code: "ECE405", title: "Signal Processing", faculty: "Dr. Rajan Kumar",      grade: "A+" },
+      { code: "ECE307", title: "Microprocessors",   faculty: "Dr. Sunita Pillai",    grade: "A"  },
+    ],
+    gradeDistribution: [{ grade:"A+",count:14 },{ grade:"A",count:9 },{ grade:"B+",count:3 },{ grade:"B",count:1 },{ grade:"C",count:0 }],
+    timeline: [
+      { semester:"Semester 1",year:"2022–23",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 2",year:"2022–23",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 3",year:"2023–24",courses:7,credits:24,status:"Completed" },
+      { semester:"Semester 4",year:"2023–24",courses:7,credits:24,status:"Completed" },
+      { semester:"Semester 5",year:"2024–25",courses:9,credits:34,status:"Completed" },
+      { semester:"Semester 6",year:"2025–26",courses:6,credits:0, status:"Ongoing"   },
+    ],
+  },
+  s3: {
+    email: "imran.khan@kcg.edu.in", phone: "+91 97654 32109", batch: "2023–27", mentor: "Dr. Sameer Rao", status: "Active", credits: 70, totalCredits: 160,
+    transcript: [
+      { sem: "Semester 1", gpa: 7.5, credits: 22, status: "Completed" },
+      { sem: "Semester 2", gpa: 7.6, credits: 22, status: "Completed" },
+      { sem: "Semester 3", gpa: 7.8, credits: 26, status: "Completed" },
+      { sem: "Semester 4", gpa: 0,   credits: 0,  status: "Ongoing"   },
+    ],
+    courses: [
+      { code: "ME301", title: "Thermodynamics",   faculty: "Dr. Sameer Rao",     grade: "B+" },
+      { code: "ME305", title: "Fluid Mechanics",  faculty: "Prof. Dinesh Patil", grade: "B"  },
+      { code: "ME401", title: "Machine Design",   faculty: "Dr. Rekha Shah",     grade: "A"  },
+    ],
+    gradeDistribution: [{ grade:"A+",count:1 },{ grade:"A",count:5 },{ grade:"B+",count:8 },{ grade:"B",count:7 },{ grade:"C",count:3 }],
+    timeline: [
+      { semester:"Semester 1",year:"2023–24",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 2",year:"2023–24",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 3",year:"2024–25",courses:7,credits:26,status:"Completed" },
+      { semester:"Semester 4",year:"2024–25",courses:6,credits:0, status:"Ongoing"   },
+    ],
+  },
+  s4: {
+    email: "ritika.bose@kcg.edu.in", phone: "+91 98001 12345", batch: "2024–26", mentor: "Prof. Nandini Gupta", status: "Active · Good Standing", credits: 44, totalCredits: 80,
+    transcript: [
+      { sem: "Semester 1", gpa: 8.8, credits: 22, status: "Completed" },
+      { sem: "Semester 2", gpa: 9.0, credits: 22, status: "Completed" },
+      { sem: "Semester 3", gpa: 0,   credits: 0,  status: "Ongoing"   },
+    ],
+    courses: [
+      { code: "MBA201", title: "Marketing Management", faculty: "Prof. Nandini Gupta", grade: "A+" },
+      { code: "MBA205", title: "Financial Accounting",  faculty: "Dr. Prakash Iyer",    grade: "A"  },
+      { code: "MBA301", title: "Operations Research",   faculty: "Dr. Leela Nair",      grade: "A"  },
+    ],
+    gradeDistribution: [{ grade:"A+",count:6 },{ grade:"A",count:8 },{ grade:"B+",count:4 },{ grade:"B",count:0 },{ grade:"C",count:0 }],
+    timeline: [
+      { semester:"Semester 1",year:"2024–25",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 2",year:"2024–25",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 3",year:"2025–26",courses:5,credits:0, status:"Ongoing"   },
+    ],
+  },
+  s5: {
+    email: "suresh.babu@kcg.edu.in", phone: "+91 96321 54780", batch: "2023–27", mentor: "Prof. Vijay Kumar", status: "Active · Warning", credits: 66, totalCredits: 160,
+    transcript: [
+      { sem: "Semester 1", gpa: 7.2, credits: 20, status: "Completed" },
+      { sem: "Semester 2", gpa: 7.0, credits: 22, status: "Completed" },
+      { sem: "Semester 3", gpa: 7.6, credits: 24, status: "Completed" },
+      { sem: "Semester 4", gpa: 0,   credits: 0,  status: "Ongoing"   },
+    ],
+    courses: [
+      { code: "CE301", title: "Structural Analysis",  faculty: "Prof. Vijay Kumar",  grade: "B+" },
+      { code: "CE305", title: "Geotechnical Engg",    faculty: "Dr. Kavitha Menon",  grade: "B"  },
+      { code: "CE401", title: "Transportation Engg",  faculty: "Dr. Mohan Reddy",    grade: "B+" },
+    ],
+    gradeDistribution: [{ grade:"A+",count:0 },{ grade:"A",count:4 },{ grade:"B+",count:9 },{ grade:"B",count:9 },{ grade:"C",count:2 }],
+    timeline: [
+      { semester:"Semester 1",year:"2023–24",courses:5,credits:20,status:"Completed" },
+      { semester:"Semester 2",year:"2023–24",courses:6,credits:22,status:"Completed" },
+      { semester:"Semester 3",year:"2024–25",courses:7,credits:24,status:"Completed" },
+      { semester:"Semester 4",year:"2024–25",courses:6,credits:0, status:"Ongoing"   },
+    ],
+  },
+};
 
 export const EXAM_SCHEDULE = [
   { id: "ex1", course: "CSE301 · Data Structures", date: "28 Jun 2026", session: "FN", hall: "A-201", invigilator: "Dr. Suresh" },
