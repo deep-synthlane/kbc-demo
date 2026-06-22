@@ -46,7 +46,7 @@ const WEEK_SCHEDULE = [
 
 function handleStart(title: string) {
   toast.success(`Starting "${title}" — opening meeting link`);
-  window.open("https://meet.google.com/kcg-faculty-class", "_blank");
+  window.open("https://meet.google.com/iuf-gtjb-mgd", "_blank");
 }
 
 function TeacherLive() {

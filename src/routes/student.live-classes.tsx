@@ -37,7 +37,7 @@ const WEEK_SCHEDULE = [
 
 function handleJoin(title: string) {
   toast.success(`Joining "${title}" — opening meeting link`);
-  window.open("https://meet.google.com/kcg-demo-class", "_blank");
+  window.open("https://meet.google.com/iuf-gtjb-mgd", "_blank");
 }
 
 function LiveClassesPage() {
