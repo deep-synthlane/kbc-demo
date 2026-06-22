@@ -15,6 +15,9 @@ import { Route as StaffRouteImport } from './routes/staff'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StudentDashboardRouteImport } from './routes/student.dashboard'
+import { Route as StudentCoursesRouteImport } from './routes/student.courses'
+import { Route as StudentCoursesCourseIdRouteImport } from './routes/student.courses.$courseId'
 
 const TeacherRoute = TeacherRouteImport.update({
   id: '/teacher',
@@ -46,22 +49,43 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudentDashboardRoute = StudentDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentCoursesRoute = StudentCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentCoursesCourseIdRoute = StudentCoursesCourseIdRouteImport.update({
+  id: '/$courseId',
+  path: '/$courseId',
+  getParentRoute: () => StudentCoursesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/ai': typeof AiRoute
   '/staff': typeof StaffRoute
-  '/student': typeof StudentRoute
+  '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRoute
+  '/student/courses': typeof StudentCoursesRouteWithChildren
+  '/student/dashboard': typeof StudentDashboardRoute
+  '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/ai': typeof AiRoute
   '/staff': typeof StaffRoute
-  '/student': typeof StudentRoute
+  '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRoute
+  '/student/courses': typeof StudentCoursesRouteWithChildren
+  '/student/dashboard': typeof StudentDashboardRoute
+  '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -69,15 +93,46 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/ai': typeof AiRoute
   '/staff': typeof StaffRoute
-  '/student': typeof StudentRoute
+  '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRoute
+  '/student/courses': typeof StudentCoursesRouteWithChildren
+  '/student/dashboard': typeof StudentDashboardRoute
+  '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/ai' | '/staff' | '/student' | '/teacher'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/ai'
+    | '/staff'
+    | '/student'
+    | '/teacher'
+    | '/student/courses'
+    | '/student/dashboard'
+    | '/student/courses/$courseId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/ai' | '/staff' | '/student' | '/teacher'
-  id: '__root__' | '/' | '/admin' | '/ai' | '/staff' | '/student' | '/teacher'
+  to:
+    | '/'
+    | '/admin'
+    | '/ai'
+    | '/staff'
+    | '/student'
+    | '/teacher'
+    | '/student/courses'
+    | '/student/dashboard'
+    | '/student/courses/$courseId'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/ai'
+    | '/staff'
+    | '/student'
+    | '/teacher'
+    | '/student/courses'
+    | '/student/dashboard'
+    | '/student/courses/$courseId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -85,7 +140,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AiRoute: typeof AiRoute
   StaffRoute: typeof StaffRoute
-  StudentRoute: typeof StudentRoute
+  StudentRoute: typeof StudentRouteWithChildren
   TeacherRoute: typeof TeacherRoute
 }
 
@@ -133,15 +188,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/student/dashboard': {
+      id: '/student/dashboard'
+      path: '/dashboard'
+      fullPath: '/student/dashboard'
+      preLoaderRoute: typeof StudentDashboardRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/courses': {
+      id: '/student/courses'
+      path: '/courses'
+      fullPath: '/student/courses'
+      preLoaderRoute: typeof StudentCoursesRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/courses/$courseId': {
+      id: '/student/courses/$courseId'
+      path: '/$courseId'
+      fullPath: '/student/courses/$courseId'
+      preLoaderRoute: typeof StudentCoursesCourseIdRouteImport
+      parentRoute: typeof StudentCoursesRoute
+    }
   }
 }
+
+interface StudentCoursesRouteChildren {
+  StudentCoursesCourseIdRoute: typeof StudentCoursesCourseIdRoute
+}
+
+const StudentCoursesRouteChildren: StudentCoursesRouteChildren = {
+  StudentCoursesCourseIdRoute: StudentCoursesCourseIdRoute,
+}
+
+const StudentCoursesRouteWithChildren = StudentCoursesRoute._addFileChildren(
+  StudentCoursesRouteChildren,
+)
+
+interface StudentRouteChildren {
+  StudentCoursesRoute: typeof StudentCoursesRouteWithChildren
+  StudentDashboardRoute: typeof StudentDashboardRoute
+}
+
+const StudentRouteChildren: StudentRouteChildren = {
+  StudentCoursesRoute: StudentCoursesRouteWithChildren,
+  StudentDashboardRoute: StudentDashboardRoute,
+}
+
+const StudentRouteWithChildren =
+  StudentRoute._addFileChildren(StudentRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AiRoute: AiRoute,
   StaffRoute: StaffRoute,
-  StudentRoute: StudentRoute,
+  StudentRoute: StudentRouteWithChildren,
   TeacherRoute: TeacherRoute,
 }
 export const routeTree = rootRouteImport
