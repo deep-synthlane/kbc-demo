@@ -15,6 +15,11 @@ import { Route as StaffRouteImport } from './routes/staff'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TeacherLiveClassesRouteImport } from './routes/teacher.live-classes'
+import { Route as TeacherDashboardRouteImport } from './routes/teacher.dashboard'
+import { Route as TeacherCoursesRouteImport } from './routes/teacher.courses'
+import { Route as TeacherContentRouteImport } from './routes/teacher.content'
+import { Route as TeacherAssessmentsRouteImport } from './routes/teacher.assessments'
 import { Route as StudentTimetableRouteImport } from './routes/student.timetable'
 import { Route as StudentProfileRouteImport } from './routes/student.profile'
 import { Route as StudentLiveClassesRouteImport } from './routes/student.live-classes'
@@ -52,6 +57,31 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherLiveClassesRoute = TeacherLiveClassesRouteImport.update({
+  id: '/live-classes',
+  path: '/live-classes',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherDashboardRoute = TeacherDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherCoursesRoute = TeacherCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherContentRoute = TeacherContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherAssessmentsRoute = TeacherAssessmentsRouteImport.update({
+  id: '/assessments',
+  path: '/assessments',
+  getParentRoute: () => TeacherRoute,
 } as any)
 const StudentTimetableRoute = StudentTimetableRouteImport.update({
   id: '/timetable',
@@ -95,13 +125,18 @@ export interface FileRoutesByFullPath {
   '/ai': typeof AiRoute
   '/staff': typeof StaffRoute
   '/student': typeof StudentRouteWithChildren
-  '/teacher': typeof TeacherRoute
+  '/teacher': typeof TeacherRouteWithChildren
   '/student/assessments': typeof StudentAssessmentsRoute
   '/student/courses': typeof StudentCoursesRouteWithChildren
   '/student/dashboard': typeof StudentDashboardRoute
   '/student/live-classes': typeof StudentLiveClassesRoute
   '/student/profile': typeof StudentProfileRoute
   '/student/timetable': typeof StudentTimetableRoute
+  '/teacher/assessments': typeof TeacherAssessmentsRoute
+  '/teacher/content': typeof TeacherContentRoute
+  '/teacher/courses': typeof TeacherCoursesRoute
+  '/teacher/dashboard': typeof TeacherDashboardRoute
+  '/teacher/live-classes': typeof TeacherLiveClassesRoute
   '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
 }
 export interface FileRoutesByTo {
@@ -110,13 +145,18 @@ export interface FileRoutesByTo {
   '/ai': typeof AiRoute
   '/staff': typeof StaffRoute
   '/student': typeof StudentRouteWithChildren
-  '/teacher': typeof TeacherRoute
+  '/teacher': typeof TeacherRouteWithChildren
   '/student/assessments': typeof StudentAssessmentsRoute
   '/student/courses': typeof StudentCoursesRouteWithChildren
   '/student/dashboard': typeof StudentDashboardRoute
   '/student/live-classes': typeof StudentLiveClassesRoute
   '/student/profile': typeof StudentProfileRoute
   '/student/timetable': typeof StudentTimetableRoute
+  '/teacher/assessments': typeof TeacherAssessmentsRoute
+  '/teacher/content': typeof TeacherContentRoute
+  '/teacher/courses': typeof TeacherCoursesRoute
+  '/teacher/dashboard': typeof TeacherDashboardRoute
+  '/teacher/live-classes': typeof TeacherLiveClassesRoute
   '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
 }
 export interface FileRoutesById {
@@ -126,13 +166,18 @@ export interface FileRoutesById {
   '/ai': typeof AiRoute
   '/staff': typeof StaffRoute
   '/student': typeof StudentRouteWithChildren
-  '/teacher': typeof TeacherRoute
+  '/teacher': typeof TeacherRouteWithChildren
   '/student/assessments': typeof StudentAssessmentsRoute
   '/student/courses': typeof StudentCoursesRouteWithChildren
   '/student/dashboard': typeof StudentDashboardRoute
   '/student/live-classes': typeof StudentLiveClassesRoute
   '/student/profile': typeof StudentProfileRoute
   '/student/timetable': typeof StudentTimetableRoute
+  '/teacher/assessments': typeof TeacherAssessmentsRoute
+  '/teacher/content': typeof TeacherContentRoute
+  '/teacher/courses': typeof TeacherCoursesRoute
+  '/teacher/dashboard': typeof TeacherDashboardRoute
+  '/teacher/live-classes': typeof TeacherLiveClassesRoute
   '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
 }
 export interface FileRouteTypes {
@@ -150,6 +195,11 @@ export interface FileRouteTypes {
     | '/student/live-classes'
     | '/student/profile'
     | '/student/timetable'
+    | '/teacher/assessments'
+    | '/teacher/content'
+    | '/teacher/courses'
+    | '/teacher/dashboard'
+    | '/teacher/live-classes'
     | '/student/courses/$courseId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -165,6 +215,11 @@ export interface FileRouteTypes {
     | '/student/live-classes'
     | '/student/profile'
     | '/student/timetable'
+    | '/teacher/assessments'
+    | '/teacher/content'
+    | '/teacher/courses'
+    | '/teacher/dashboard'
+    | '/teacher/live-classes'
     | '/student/courses/$courseId'
   id:
     | '__root__'
@@ -180,6 +235,11 @@ export interface FileRouteTypes {
     | '/student/live-classes'
     | '/student/profile'
     | '/student/timetable'
+    | '/teacher/assessments'
+    | '/teacher/content'
+    | '/teacher/courses'
+    | '/teacher/dashboard'
+    | '/teacher/live-classes'
     | '/student/courses/$courseId'
   fileRoutesById: FileRoutesById
 }
@@ -189,7 +249,7 @@ export interface RootRouteChildren {
   AiRoute: typeof AiRoute
   StaffRoute: typeof StaffRoute
   StudentRoute: typeof StudentRouteWithChildren
-  TeacherRoute: typeof TeacherRoute
+  TeacherRoute: typeof TeacherRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -235,6 +295,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/teacher/live-classes': {
+      id: '/teacher/live-classes'
+      path: '/live-classes'
+      fullPath: '/teacher/live-classes'
+      preLoaderRoute: typeof TeacherLiveClassesRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/dashboard': {
+      id: '/teacher/dashboard'
+      path: '/dashboard'
+      fullPath: '/teacher/dashboard'
+      preLoaderRoute: typeof TeacherDashboardRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/courses': {
+      id: '/teacher/courses'
+      path: '/courses'
+      fullPath: '/teacher/courses'
+      preLoaderRoute: typeof TeacherCoursesRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/content': {
+      id: '/teacher/content'
+      path: '/content'
+      fullPath: '/teacher/content'
+      preLoaderRoute: typeof TeacherContentRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/assessments': {
+      id: '/teacher/assessments'
+      path: '/assessments'
+      fullPath: '/teacher/assessments'
+      preLoaderRoute: typeof TeacherAssessmentsRouteImport
+      parentRoute: typeof TeacherRoute
     }
     '/student/timetable': {
       id: '/student/timetable'
@@ -321,13 +416,32 @@ const StudentRouteChildren: StudentRouteChildren = {
 const StudentRouteWithChildren =
   StudentRoute._addFileChildren(StudentRouteChildren)
 
+interface TeacherRouteChildren {
+  TeacherAssessmentsRoute: typeof TeacherAssessmentsRoute
+  TeacherContentRoute: typeof TeacherContentRoute
+  TeacherCoursesRoute: typeof TeacherCoursesRoute
+  TeacherDashboardRoute: typeof TeacherDashboardRoute
+  TeacherLiveClassesRoute: typeof TeacherLiveClassesRoute
+}
+
+const TeacherRouteChildren: TeacherRouteChildren = {
+  TeacherAssessmentsRoute: TeacherAssessmentsRoute,
+  TeacherContentRoute: TeacherContentRoute,
+  TeacherCoursesRoute: TeacherCoursesRoute,
+  TeacherDashboardRoute: TeacherDashboardRoute,
+  TeacherLiveClassesRoute: TeacherLiveClassesRoute,
+}
+
+const TeacherRouteWithChildren =
+  TeacherRoute._addFileChildren(TeacherRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AiRoute: AiRoute,
   StaffRoute: StaffRoute,
   StudentRoute: StudentRouteWithChildren,
-  TeacherRoute: TeacherRoute,
+  TeacherRoute: TeacherRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
