@@ -11,6 +11,8 @@ import {
   Sparkles,
   Eye,
   UserCog,
+  FolderOpen,
+  ShieldCheck,
 } from "lucide-react";
 import { RoleShell, type NavItem } from "@/components/RoleShell";
 import { getSession } from "@/lib/session";
@@ -29,6 +31,24 @@ const NAV: NavItem[] = [
   { label: "Timetable", to: "/admin/timetable", icon: Calendar },
   { label: "Examinations", to: "/admin/examinations", icon: FileSpreadsheet },
   { label: "Reports", to: "/admin/reports", icon: BarChart3 },
+  {
+    label: "Library Usage & Analytics",
+    to: "https://nitpy.knimbus.com/librarian/v2/elibrarySetup/reports/overview",
+    icon: BarChart3,
+    external: true,
+  },
+  {
+    label: "Content Management",
+    to: "https://nitpy.knimbus.com/librarian/v2/elibrarySetup/content/sections",
+    icon: FolderOpen,
+    external: true,
+  },
+  {
+    label: "Library Access Rights",
+    to: "https://nitpy.knimbus.com/librarian/v2/elibrarySetup/userManagement/serviceGroups",
+    icon: ShieldCheck,
+    external: true,
+  },
   { label: "AI Features", to: "/ai/interview", icon: Sparkles },
 ];
 

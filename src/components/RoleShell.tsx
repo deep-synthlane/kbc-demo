@@ -31,6 +31,7 @@ export type NavItem = {
   to: string;
   icon: ComponentType<{ className?: string }>;
   badge?: string;
+  external?: boolean;
 };
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -178,6 +179,31 @@ function SidebarInner({ role, nav }: { role: Role; nav: NavItem[] }) {
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
         {nav.map((item) => {
           const Icon = item.icon;
+          const linkClass = cn(
+            "group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition",
+            "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+          );
+
+          if (item.external) {
+            return (
+              <a
+                key={item.to}
+                href={item.to}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1 truncate">{item.label}</span>
+                {item.badge && (
+                  <Badge className="bg-sidebar-primary text-sidebar-primary-foreground text-[10px]">
+                    {item.badge}
+                  </Badge>
+                )}
+              </a>
+            );
+          }
+
           const active =
             pathname === item.to || (item.to !== `/${role}` && pathname.startsWith(item.to));
           return (
@@ -185,10 +211,8 @@ function SidebarInner({ role, nav }: { role: Role; nav: NavItem[] }) {
               key={item.to}
               to={item.to}
               className={cn(
-                "group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition",
-                active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+                linkClass,
+                active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />

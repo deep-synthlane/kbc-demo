@@ -11,6 +11,8 @@ import {
   BookMarked,
   IndianRupee,
   FileBadge,
+  Library,
+  Bell,
 } from "lucide-react";
 import { RoleShell, type NavItem } from "@/components/RoleShell";
 import { getSession } from "@/lib/session";
@@ -24,6 +26,18 @@ const NAV: NavItem[] = [
   { label: "Timetable", to: "/student/timetable", icon: Calendar },
   { label: "Fees", to: "/student/fees", icon: IndianRupee },
   { label: "Curriculum", to: "/student/curriculum", icon: BookMarked },
+  {
+    label: "eLibrary",
+    to: "https://nitpy.knimbus.com/portal/v2/default/home",
+    icon: Library,
+    external: true,
+  },
+  {
+    label: "Notifications",
+    to: "https://nitpy.knimbus.com/librarian/v2/elibrarySetup/notifications",
+    icon: Bell,
+    external: true,
+  },
   { label: "My Applications", to: "/student/applications", icon: FileBadge },
   { label: "Hall Ticket", to: "/student/hall-ticket", icon: Ticket },
   { label: "Profile", to: "/student/profile", icon: User },
