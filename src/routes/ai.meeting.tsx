@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/RoleShell";
 import { MEETING_TRANSCRIPT } from "@/lib/mockData";
 
 export const Route = createFileRoute("/ai/meeting")({
-  head: () => ({ meta: [{ title: "AI Meeting Intelligence · KCG University" }] }),
+  head: () => ({ meta: [{ title: "AI Meeting Intelligence · KCG" }] }),
   component: AIMeeting,
 });
 

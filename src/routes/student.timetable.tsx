@@ -6,7 +6,7 @@ import { TIMETABLE, UPCOMING_EXAMS } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/timetable")({
-  head: () => ({ meta: [{ title: "Timetable · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Timetable · KCG" }] }),
   component: TimetablePage,
 });
 

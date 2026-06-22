@@ -24,7 +24,7 @@ import {
 } from "@/lib/mockData";
 
 export const Route = createFileRoute("/admin/dashboard")({
-  head: () => ({ meta: [{ title: "Administrator Dashboard · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Administrator Dashboard · KCG" }] }),
   component: AdminDashboard,
 });
 

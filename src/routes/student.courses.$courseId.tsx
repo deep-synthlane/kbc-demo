@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import {
   PlayCircle,
   FileText,
@@ -27,18 +27,19 @@ import {
   ResponsiveContainer,
   PolarAngleAxis,
 } from "recharts";
-import { COURSES, UNITS, QUIZ_RESULT } from "@/lib/mockData";
+import { COURSES, UNITS } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/courses/$courseId")({
-  head: () => ({ meta: [{ title: "Course · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Course · KCG" }] }),
   component: CourseDetail,
 });
 
 function CourseDetail() {
   const { courseId } = useParams({ from: "/student/courses/$courseId" });
+  const navigate = useNavigate();
   const course = COURSES.find((c) => c.id === courseId) ?? COURSES[0];
-  const [open, setOpen] = useState<"video" | "pdf" | "quiz" | null>(null);
+  const [open, setOpen] = useState<"video" | "pdf" | null>(null);
 
   return (
     <div className="space-y-6">
@@ -115,11 +116,13 @@ function CourseDetail() {
                       return (
                         <button
                           key={l.id}
-                          onClick={() =>
-                            setOpen(
-                              l.type === "video" ? "video" : l.type === "pdf" ? "pdf" : "quiz",
-                            )
-                          }
+                          onClick={() => {
+                            if (l.type === "quiz") {
+                              navigate({ to: "/student/quiz/$quizId", params: { quizId: l.id } });
+                            } else {
+                              setOpen(l.type === "video" ? "video" : "pdf");
+                            }
+                          }}
                           className="w-full flex items-center gap-3 rounded-md px-3 py-2.5 hover:bg-muted transition text-left"
                         >
                           <Icon
@@ -174,8 +177,10 @@ function CourseDetail() {
 
           <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
             <h3 className="font-semibold">Quick Actions</h3>
-            <Button variant="outline" className="w-full justify-start" onClick={() => setOpen("quiz")}>
-              <HelpCircle className="h-4 w-4 mr-2" /> Attempt next quiz
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <Link to="/student/quiz/$quizId" params={{ quizId: "q2" }}>
+                <HelpCircle className="h-4 w-4 mr-2" /> Attempt next quiz
+              </Link>
             </Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => setOpen("pdf")}>
               <FileText className="h-4 w-4 mr-2" /> Open reference notes
@@ -228,53 +233,6 @@ function CourseDetail() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={open === "quiz"} onOpenChange={(v) => !v && setOpen(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{QUIZ_RESULT.title} — Result</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-lg bg-success/10 p-4 text-center">
-              <div className="text-3xl font-display font-semibold text-success">
-                {QUIZ_RESULT.score}/{QUIZ_RESULT.total}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">Score</div>
-            </div>
-            <div className="rounded-lg bg-primary/10 p-4 text-center">
-              <div className="text-3xl font-display font-semibold text-primary">
-                {QUIZ_RESULT.performance}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">Performance</div>
-            </div>
-            <div className="rounded-lg bg-muted p-4 text-center">
-              <div className="text-3xl font-display font-semibold">{QUIZ_RESULT.timeTaken}</div>
-              <div className="text-xs text-muted-foreground mt-1">Time taken</div>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-2">Topic breakdown</h4>
-            <div className="space-y-2">
-              {QUIZ_RESULT.breakdown.map((b) => (
-                <div key={b.topic}>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>{b.topic}</span>
-                    <span className="text-muted-foreground">
-                      {b.correct}/{b.total}
-                    </span>
-                  </div>
-                  <Progress value={(b.correct / b.total) * 100} className="h-1.5" />
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-lg border-l-4 border-primary bg-primary/5 p-4">
-            <div className="text-xs uppercase tracking-wider text-primary font-medium mb-1">
-              Faculty Feedback
-            </div>
-            <p className="text-sm">{QUIZ_RESULT.facultyFeedback}</p>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

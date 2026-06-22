@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/RoleShell";
 
 export const Route = createFileRoute("/staff/announcements")({
-  head: () => ({ meta: [{ title: "Announcements · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Announcements · KCG" }] }),
   component: Announcements,
 });
 

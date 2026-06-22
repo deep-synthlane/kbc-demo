@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, GraduationCap, BookOpen, TrendingUp, Award, User } from "lucide-react";
+import { Mail, GraduationCap, BookOpen, TrendingUp, Award, User, CheckCircle2, Clock } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,10 +20,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { PageHeader, StatCard } from "@/components/RoleShell";
-import { STUDENT_PROFILE, TRANSCRIPT, GRADE_DISTRIBUTION } from "@/lib/mockData";
+import { STUDENT_PROFILE, TRANSCRIPT, GRADE_DISTRIBUTION, ENROLLMENT_HISTORY } from "@/lib/mockData";
 
 export const Route = createFileRoute("/student/profile")({
-  head: () => ({ meta: [{ title: "Profile · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Profile · KCG" }] }),
   component: ProfilePage,
 });
 
@@ -124,6 +124,50 @@ function ProfilePage() {
                 <Bar dataKey="count" fill="var(--color-gold)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Enrollment History */}
+      <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <h3 className="font-semibold flex items-center gap-2 mb-4">
+          <Clock className="h-4 w-4 text-primary" /> Enrollment History
+        </h3>
+        <div className="relative ml-4">
+          <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-border" />
+          <div className="space-y-4">
+            {ENROLLMENT_HISTORY.map((e) => (
+              <div key={e.semester} className="relative flex items-start gap-4 pl-8">
+                <div className="absolute left-0 top-1">
+                  {e.status === "Completed" ? (
+                    <div className="grid h-6 w-6 place-items-center rounded-full bg-success text-white">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    </div>
+                  ) : (
+                    <div className="grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
+                      <BookOpen className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">{e.semester}</span>
+                    <Badge
+                      className={
+                        e.status === "Completed"
+                          ? "bg-success/15 text-success border-0 text-[10px]"
+                          : "bg-primary/10 text-primary border-0 text-[10px]"
+                      }
+                    >
+                      {e.status}
+                    </Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {e.year} · {e.courses} courses · {e.credits} credits
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

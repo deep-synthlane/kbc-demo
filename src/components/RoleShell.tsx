@@ -164,15 +164,13 @@ function SidebarInner({ role, nav }: { role: Role; nav: NavItem[] }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
-        <div className="grid h-10 w-10 place-items-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shrink-0">
-          <GraduationCap className="h-5 w-5" />
-        </div>
+        <img src={UNIVERSITY.logo} alt="" className="h-10 w-10 rounded-full object-cover object-left shrink-0" />
         <div className="min-w-0">
-          <div className="font-display text-base font-semibold leading-tight truncate">
+          <div className="font-display text-sm font-semibold leading-tight truncate">
             {UNIVERSITY.name}
           </div>
           <div className="text-[11px] uppercase tracking-wider text-sidebar-foreground/60 truncate">
-            Digital Campus
+            Smart Campus
           </div>
         </div>
       </div>

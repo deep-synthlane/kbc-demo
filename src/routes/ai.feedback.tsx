@@ -17,7 +17,7 @@ import { PageHeader, StatCard } from "@/components/RoleShell";
 import { FEEDBACK_SENTIMENT, FACULTY_RATINGS } from "@/lib/mockData";
 
 export const Route = createFileRoute("/ai/feedback")({
-  head: () => ({ meta: [{ title: "AI Feedback Engine · KCG University" }] }),
+  head: () => ({ meta: [{ title: "AI Feedback Engine · KCG" }] }),
   component: AIFeedback,
 });
 

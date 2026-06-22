@@ -7,7 +7,7 @@ import { TIMETABLE } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/timetable")({
-  head: () => ({ meta: [{ title: "Timetable Builder · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Timetable Builder · KCG" }] }),
   component: AdminTimetable,
 });
 

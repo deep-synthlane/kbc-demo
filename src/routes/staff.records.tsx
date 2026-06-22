@@ -14,7 +14,7 @@ import {
 import { PageHeader } from "@/components/RoleShell";
 
 export const Route = createFileRoute("/staff/records")({
-  head: () => ({ meta: [{ title: "Document Verification · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Document Verification · KCG" }] }),
   component: StaffRecords,
 });
 

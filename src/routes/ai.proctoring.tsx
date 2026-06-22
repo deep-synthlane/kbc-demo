@@ -7,7 +7,7 @@ import { PROCTOR_FEED } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/ai/proctoring")({
-  head: () => ({ meta: [{ title: "AI Proctoring · KCG University" }] }),
+  head: () => ({ meta: [{ title: "AI Proctoring · KCG" }] }),
   component: AIProctoring,
 });
 

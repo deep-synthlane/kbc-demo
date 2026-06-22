@@ -16,7 +16,7 @@ import { PageHeader, StatCard } from "@/components/RoleShell";
 import { COURSES, SUBMISSIONS_TO_GRADE, LIVE_CLASSES } from "@/lib/mockData";
 
 export const Route = createFileRoute("/teacher/dashboard")({
-  head: () => ({ meta: [{ title: "Faculty Dashboard · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Faculty Dashboard · KCG" }] }),
   component: TeacherDashboard,
 });
 

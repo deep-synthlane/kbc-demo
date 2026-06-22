@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { FileText, Upload, MessageSquare } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { FileText, Upload, MessageSquare, HelpCircle } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -16,7 +17,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   BarChart,
   Bar,
@@ -28,9 +36,10 @@ import {
 } from "recharts";
 import { PageHeader } from "@/components/RoleShell";
 import { ASSIGNMENTS, QUIZ_RESULT } from "@/lib/mockData";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/student/assessments")({
-  head: () => ({ meta: [{ title: "Assessments · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Assessments · KCG" }] }),
   component: Assessments,
 });
 
@@ -43,6 +52,19 @@ const QUIZ_HISTORY = [
 ];
 
 function Assessments() {
+  const [assignments, setAssignments] = useState(ASSIGNMENTS.map((a) => ({ ...a })));
+  const [submitDialog, setSubmitDialog] = useState<string | null>(null);
+  const submitTarget = assignments.find((a) => a.id === submitDialog);
+
+  function handleSubmitAssignment() {
+    if (!submitDialog) return;
+    setAssignments((prev) =>
+      prev.map((a) => (a.id === submitDialog ? { ...a, status: "Submitted" } : a)),
+    );
+    setSubmitDialog(null);
+    toast.success("Assignment submitted successfully");
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -64,7 +86,14 @@ function Assessments() {
                 <h3 className="font-semibold">Recent Quiz Performance</h3>
                 <p className="text-xs text-muted-foreground">Last 5 quizzes across courses</p>
               </div>
-              <Badge className="bg-success/15 text-success border-0">Avg 84%</Badge>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-success/15 text-success border-0">Avg 84%</Badge>
+                <Button size="sm" asChild>
+                  <Link to="/student/quiz/$quizId" params={{ quizId: "q1" }}>
+                    <HelpCircle className="h-3.5 w-3.5 mr-1.5" /> Take Quiz
+                  </Link>
+                </Button>
+              </div>
             </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -101,7 +130,7 @@ function Assessments() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {ASSIGNMENTS.map((a) => (
+                {assignments.map((a) => (
                   <TableRow key={a.id}>
                     <TableCell className="font-medium">{a.title}</TableCell>
                     <TableCell>{a.course}</TableCell>
@@ -121,7 +150,11 @@ function Assessments() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="outline">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => a.status !== "Submitted" && setSubmitDialog(a.id)}
+                      >
                         <Upload className="h-3.5 w-3.5 mr-1.5" />
                         {a.status === "Submitted" ? "View" : "Submit"}
                       </Button>
@@ -187,6 +220,30 @@ function Assessments() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!submitDialog} onOpenChange={(v) => !v && setSubmitDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Submit Assignment</DialogTitle>
+          </DialogHeader>
+          {submitTarget && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">{submitTarget.title} · {submitTarget.course}</p>
+              <div className="rounded-lg border-2 border-dashed p-6 text-center text-sm text-muted-foreground">
+                <Upload className="h-6 w-6 mx-auto mb-2" />
+                Drag & drop your file here
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">File name</label>
+                <Input defaultValue="assignment_submission.pdf" />
+              </div>
+              <Button className="w-full" onClick={handleSubmitAssignment}>
+                Submit Assignment
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

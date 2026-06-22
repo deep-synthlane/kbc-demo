@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/RoleShell";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/curriculum")({
-  head: () => ({ meta: [{ title: "Curriculum & Calendar · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Curriculum & Calendar · KCG" }] }),
   component: Curriculum,
 });
 

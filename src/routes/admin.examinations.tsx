@@ -22,7 +22,7 @@ import { EXAM_SCHEDULE } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/examinations")({
-  head: () => ({ meta: [{ title: "Examinations · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Examinations · KCG" }] }),
   component: Examinations,
 });
 
@@ -92,7 +92,7 @@ function Examinations() {
             <div className="flex items-start justify-between border-b pb-4">
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                  KCG University · Examinations Cell
+                  KCG · Examinations Cell
                 </div>
                 <h2 className="font-display text-2xl font-semibold mt-1">Hall Ticket</h2>
                 <div className="text-sm text-muted-foreground mt-1">

@@ -15,7 +15,7 @@ import { PageHeader } from "@/components/RoleShell";
 import { INTERVIEW_QA } from "@/lib/mockData";
 
 export const Route = createFileRoute("/ai/interview")({
-  head: () => ({ meta: [{ title: "AI Interview Assistant · KCG University" }] }),
+  head: () => ({ meta: [{ title: "AI Interview Assistant · KCG" }] }),
   component: AIInterview,
 });
 

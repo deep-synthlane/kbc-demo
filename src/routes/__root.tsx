@@ -77,16 +77,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "KCG University · Digital Learning & Academic ERP" },
+      { title: "Knowledge Consortium of Gujarat · Smart Campus" },
       {
         name: "description",
         content:
-          "KCG University's unified Learning Management System and Academic ERP for students, faculty, administrators and staff.",
+          "Knowledge Consortium of Gujarat's unified Learning Management System and Academic ERP for students, faculty, administrators and staff.",
       },
-      { property: "og:title", content: "KCG University · Digital Campus" },
+      { property: "og:title", content: "Knowledge Consortium of Gujarat · Smart Campus" },
       {
         property: "og:description",
-        content: "A complete LMS + Academic ERP platform powering the KCG University campus.",
+        content: "A complete LMS + Academic ERP platform powering the KCG Smart Campus.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

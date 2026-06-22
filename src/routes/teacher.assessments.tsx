@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, FileText, MessageSquarePlus } from "lucide-react";
+import { useState } from "react";
+import { Plus, FileText, MessageSquarePlus, Wand2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,9 +31,10 @@ import {
 } from "recharts";
 import { PageHeader } from "@/components/RoleShell";
 import { QUESTION_BANK, SUBMISSIONS_TO_GRADE } from "@/lib/mockData";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/teacher/assessments")({
-  head: () => ({ meta: [{ title: "Assessments · Faculty · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Assessments · Faculty · KCG" }] }),
   component: TeacherAssess,
 });
 
@@ -44,7 +46,25 @@ const PERF = [
   { range: "90-100", students: 18 },
 ];
 
+const AUTO_SCORES: Record<string, number> = { s1: 85, s2: 78, s4: 91 };
+
 function TeacherAssess() {
+  const [subs, setSubs] = useState(SUBMISSIONS_TO_GRADE.map((s) => ({ ...s, autoGraded: false })));
+
+  function handleAutoGrade() {
+    toast("Auto-grading 3 pending submissions…");
+    setTimeout(() => {
+      setSubs((prev) =>
+        prev.map((s) =>
+          s.status === "Pending"
+            ? { ...s, status: "Graded", autoGraded: true }
+            : s,
+        ),
+      );
+      toast.success("Auto-grading complete");
+    }, 2000);
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader title="Assessment Centre" subtitle="Question bank, quizzes, assignments and grading" />
@@ -56,73 +76,86 @@ function TeacherAssess() {
           <TabsTrigger value="analytics">Performance Analytics</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="evaluate" className="grid lg:grid-cols-[1fr_360px] gap-4">
-          <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Assignment</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {SUBMISSIONS_TO_GRADE.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.student}</TableCell>
-                    <TableCell>{s.assignment}</TableCell>
-                    <TableCell className="text-muted-foreground">{s.submitted}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={
-                          s.status === "Graded"
-                            ? "bg-success/15 text-success border-0"
-                            : "bg-warning/20 text-warning-foreground border-0"
-                        }
-                      >
-                        {s.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" variant="outline">
-                        {s.status === "Graded" ? "Review" : "Evaluate"}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+        <TabsContent value="evaluate" className="space-y-4">
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={handleAutoGrade}>
+              <Wand2 className="h-4 w-4 mr-2" /> Auto-grade
+            </Button>
           </div>
+          <div className="grid lg:grid-cols-[1fr_360px] gap-4">
+            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Student</TableHead>
+                    <TableHead>Assignment</TableHead>
+                    <TableHead>Submitted</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {subs.map((s) => (
+                    <TableRow key={s.id}>
+                      <TableCell className="font-medium">{s.student}</TableCell>
+                      <TableCell>{s.assignment}</TableCell>
+                      <TableCell className="text-muted-foreground">{s.submitted}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <Badge
+                            className={
+                              s.status === "Graded"
+                                ? "bg-success/15 text-success border-0"
+                                : "bg-warning/20 text-warning-foreground border-0"
+                            }
+                          >
+                            {s.autoGraded ? "Auto-graded" : s.status}
+                          </Badge>
+                          {s.autoGraded && (
+                            <Badge className="bg-violet-500/10 text-violet-600 border-0 text-[9px] px-1.5">
+                              <Sparkles className="h-2.5 w-2.5 mr-0.5" /> AI
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="outline">
+                          {s.status === "Graded" ? "Review" : "Evaluate"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-          {/* Inline grading panel */}
-          <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
-            <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                Now grading
-              </div>
-              <h3 className="font-semibold mt-1">Ananya Iyer · LRU Cache</h3>
-            </div>
-            <div className="rounded-lg border bg-muted/40 p-4 text-sm">
-              <FileText className="h-4 w-4 inline mr-2 text-primary" />
-              submission.zip · 14 KB
-            </div>
-            <div className="space-y-3">
+            <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
               <div>
-                <Label className="text-xs">Score (out of 100)</Label>
-                <Input defaultValue="92" type="number" />
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Now grading
+                </div>
+                <h3 className="font-semibold mt-1">Ananya Iyer · LRU Cache</h3>
               </div>
-              <div>
-                <Label className="text-xs">Feedback</Label>
-                <Textarea
-                  rows={4}
-                  defaultValue="Clean implementation. Consider thread-safety for production use."
-                />
+              <div className="rounded-lg border bg-muted/40 p-4 text-sm">
+                <FileText className="h-4 w-4 inline mr-2 text-primary" />
+                submission.zip · 14 KB
               </div>
-              <Button className="w-full">
-                <MessageSquarePlus className="h-4 w-4 mr-2" /> Submit grade & feedback
-              </Button>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs">Score (out of 100)</Label>
+                  <Input defaultValue="92" type="number" />
+                </div>
+                <div>
+                  <Label className="text-xs">Feedback</Label>
+                  <Textarea
+                    rows={4}
+                    defaultValue="Clean implementation. Consider thread-safety for production use."
+                  />
+                </div>
+                <Button className="w-full">
+                  <MessageSquarePlus className="h-4 w-4 mr-2" /> Submit grade & feedback
+                </Button>
+              </div>
             </div>
           </div>
         </TabsContent>

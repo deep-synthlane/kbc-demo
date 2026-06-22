@@ -24,7 +24,7 @@ import { PageHeader } from "@/components/RoleShell";
 import { LIVE_CLASSES } from "@/lib/mockData";
 
 export const Route = createFileRoute("/teacher/live-classes")({
-  head: () => ({ meta: [{ title: "Live Classes · Faculty · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Live Classes · Faculty · KCG" }] }),
   component: TeacherLive,
 });
 

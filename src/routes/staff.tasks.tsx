@@ -7,7 +7,7 @@ import { STAFF_TASKS } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/staff/tasks")({
-  head: () => ({ meta: [{ title: "Staff Tasks · KCG University" }] }),
+  head: () => ({ meta: [{ title: "Staff Tasks · KCG" }] }),
   component: StaffTasks,
 });
 

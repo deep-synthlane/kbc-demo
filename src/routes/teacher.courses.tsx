@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/RoleShell";
 import { COURSES } from "@/lib/mockData";
 
 export const Route = createFileRoute("/teacher/courses")({
-  head: () => ({ meta: [{ title: "My Courses · Faculty · KCG University" }] }),
+  head: () => ({ meta: [{ title: "My Courses · Faculty · KCG" }] }),
   component: TeacherCourses,
 });
 

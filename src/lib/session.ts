@@ -1,14 +1,14 @@
 import type { Role } from "./mockData";
 
-const KEY = "kcgu_session";
+const KEY = "kcg_session";
 
 export type Session = { role: Role; name: string; email: string };
 
 const DEFAULT_NAMES: Record<Role, { name: string; email: string }> = {
-  student: { name: "Ananya Iyer", email: "ananya.iyer@kcgu.edu.in" },
-  teacher: { name: "Dr. Priya Ramanathan", email: "priya.r@kcgu.edu.in" },
-  admin: { name: "Dr. Vikram Acharya", email: "registrar@kcgu.edu.in" },
-  staff: { name: "Mahesh Kumar", email: "mahesh.k@kcgu.edu.in" },
+  student: { name: "Ananya Iyer", email: "ananya.iyer@kcg.edu.in" },
+  teacher: { name: "Dr. Priya Ramanathan", email: "priya.r@kcg.edu.in" },
+  admin: { name: "Dr. Vikram Acharya", email: "registrar@kcg.edu.in" },
+  staff: { name: "Mahesh Kumar", email: "mahesh.k@kcg.edu.in" },
 };
 
 export function setSession(role: Role) {

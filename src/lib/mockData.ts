@@ -1,4 +1,4 @@
-// Centralized mock data for the KCG University demo.
+// Centralized mock data for the KCG Smart Campus demo.
 
 export type Role = "student" | "teacher" | "admin" | "staff";
 
@@ -10,13 +10,14 @@ export const ROLES: { id: Role; label: string; tagline: string }[] = [
 ];
 
 export const UNIVERSITY = {
-  name: "KCG University",
-  short: "KCGU",
-  tagline: "A Centre of Excellence in Higher Education",
-  motto: "Knowledge · Character · Growth",
-  established: 1985,
-  location: "Chennai, Tamil Nadu",
-  accreditations: ["NAAC A++", "NBA Accredited", "UGC Recognised", "ISO 9001:2015"],
+  name: "Knowledge Consortium of Gujarat",
+  short: "KCG",
+  tagline: "Department of Education · Government of Gujarat",
+  motto: "Knowledge · Innovation · Excellence",
+  established: 2014,
+  location: "Gandhinagar, Gujarat",
+  accreditations: ["Govt. of Gujarat", "Dept. of Education", "UGC Recognised", "NAAC Accredited"],
+  logo: "/kcg-logo.png",
 };
 
 export const COURSES = [
@@ -261,13 +262,13 @@ export const FEE_COLLECTION = [
 ];
 
 export const APPLICATIONS = [
-  { id: "AP-2026-0142", name: "Rohan Mehta", program: "B.Tech CSE", status: "Pending Review", docs: "Complete", verified: false },
-  { id: "AP-2026-0143", name: "Sneha Pillai", program: "B.Tech ECE", status: "Approved", docs: "Complete", verified: true },
-  { id: "AP-2026-0144", name: "Vikram Singh", program: "MBA", status: "Documents Required", docs: "Incomplete", verified: false },
-  { id: "AP-2026-0145", name: "Lakshmi Narayan", program: "B.Tech MECH", status: "Pending Review", docs: "Complete", verified: false },
-  { id: "AP-2026-0146", name: "Aarav Kapoor", program: "B.Sc Data Science", status: "Approved", docs: "Complete", verified: true },
-  { id: "AP-2026-0147", name: "Diya Sharma", program: "B.Tech CSE", status: "Rejected", docs: "Complete", verified: true },
-  { id: "AP-2026-0148", name: "Karan Joshi", program: "B.Tech CIVIL", status: "Pending Review", docs: "Complete", verified: false },
+  { id: "AP-2026-0142", name: "Rohan Mehta", program: "B.Tech CSE", status: "Pending Review", docs: "Complete", verified: false, meritScore: null },
+  { id: "AP-2026-0143", name: "Sneha Pillai", program: "B.Tech ECE", status: "Approved", docs: "Complete", verified: true, meritScore: 94.5 },
+  { id: "AP-2026-0144", name: "Vikram Singh", program: "MBA", status: "Documents Required", docs: "Incomplete", verified: false, meritScore: null },
+  { id: "AP-2026-0145", name: "Lakshmi Narayan", program: "B.Tech MECH", status: "Pending Review", docs: "Complete", verified: false, meritScore: null },
+  { id: "AP-2026-0146", name: "Aarav Kapoor", program: "B.Sc Data Science", status: "Approved", docs: "Complete", verified: true, meritScore: 91.2 },
+  { id: "AP-2026-0147", name: "Diya Sharma", program: "B.Tech CSE", status: "Rejected", docs: "Complete", verified: true, meritScore: null },
+  { id: "AP-2026-0148", name: "Karan Joshi", program: "B.Tech CIVIL", status: "Pending Review", docs: "Complete", verified: false, meritScore: null },
 ];
 
 export const STUDENTS_DIRECTORY = [
@@ -287,11 +288,11 @@ export const EXAM_SCHEDULE = [
 ];
 
 export const CONTENT_ITEMS = [
-  { id: "c1", title: "DS · Unit 3 Lecture Slides", type: "PPT", status: "Published", updated: "12 Jun" },
-  { id: "c2", title: "DBMS · Normalization Walkthrough", type: "Video", status: "Review", updated: "13 Jun" },
-  { id: "c3", title: "AI · Reinforcement Learning Notes", type: "PDF", status: "Draft", updated: "14 Jun" },
-  { id: "c4", title: "OS · Scheduling SCORM Module", type: "SCORM", status: "Published", updated: "10 Jun" },
-  { id: "c5", title: "DS · Trees Lab Manual", type: "PDF", status: "Review", updated: "15 Jun" },
+  { id: "c1", title: "DS · Unit 3 Lecture Slides", type: "PPT", status: "Published", updated: "12 Jun", version: "v3.0" },
+  { id: "c2", title: "DBMS · Normalization Walkthrough", type: "Video", status: "Review", updated: "13 Jun", version: "v2.1" },
+  { id: "c3", title: "AI · Reinforcement Learning Notes", type: "PDF", status: "Draft", updated: "14 Jun", version: "v1.0" },
+  { id: "c4", title: "OS · Scheduling SCORM Module", type: "SCORM", status: "Published", updated: "10 Jun", version: "v2.0" },
+  { id: "c5", title: "DS · Trees Lab Manual", type: "PDF", status: "Review", updated: "15 Jun", version: "v1.2" },
 ];
 
 export const QUESTION_BANK = [
@@ -355,4 +356,131 @@ export const FACULTY_RATINGS = [
   { faculty: "Dr. Meera S.", rating: 4.8 },
   { faculty: "Dr. Karthik V.", rating: 4.4 },
   { faculty: "Dr. Suresh M.", rating: 4.2 },
+];
+
+// --- Quiz questions for student quiz-taking flow ---
+
+export const QUIZ_QUESTIONS = [
+  {
+    id: "qq1",
+    question: "Which data structure uses LIFO (Last In, First Out) ordering?",
+    options: ["Queue", "Stack", "Linked List", "Tree"],
+    correctAnswer: 1,
+  },
+  {
+    id: "qq2",
+    question: "What is the time complexity of searching in a balanced BST?",
+    options: ["O(n)", "O(log n)", "O(n log n)", "O(1)"],
+    correctAnswer: 1,
+  },
+  {
+    id: "qq3",
+    question: "Which traversal visits the root node between the left and right subtrees?",
+    options: ["Preorder", "Postorder", "Inorder", "Level-order"],
+    correctAnswer: 2,
+  },
+  {
+    id: "qq4",
+    question: "A circular linked list's last node points to:",
+    options: ["null", "The head node", "The previous node", "Itself"],
+    correctAnswer: 1,
+  },
+  {
+    id: "qq5",
+    question: "Which sorting algorithm has the best average-case time complexity?",
+    options: ["Bubble Sort — O(n²)", "Merge Sort — O(n log n)", "Selection Sort — O(n²)", "Insertion Sort — O(n²)"],
+    correctAnswer: 1,
+  },
+];
+
+// --- Enrollment history for student profile ---
+
+export const ENROLLMENT_HISTORY = [
+  { semester: "Semester 1", year: "2022-23", status: "Completed", courses: 6, credits: 24 },
+  { semester: "Semester 2", year: "2022-23", status: "Completed", courses: 6, credits: 24 },
+  { semester: "Semester 3", year: "2023-24", status: "Completed", courses: 7, credits: 26 },
+  { semester: "Semester 4", year: "2023-24", status: "Completed", courses: 6, credits: 24 },
+  { semester: "Semester 5", year: "2024-25", status: "Completed", courses: 5, credits: 22 },
+  { semester: "Semester 6", year: "2025-26", status: "Ongoing", courses: 5, credits: 22 },
+];
+
+// --- Student curriculum (semester-wise course list) ---
+
+export const STUDENT_CURRICULUM = [
+  {
+    semester: 1, courses: [
+      { code: "CSE101", title: "Programming in C", credits: 4, type: "Core" },
+      { code: "MAT101", title: "Engineering Mathematics I", credits: 4, type: "Core" },
+      { code: "PHY101", title: "Engineering Physics", credits: 3, type: "Core" },
+      { code: "ENG101", title: "Technical English", credits: 2, type: "Core" },
+      { code: "CSE102", title: "Computer Lab I", credits: 2, type: "Lab" },
+      { code: "PHY102", title: "Physics Lab", credits: 1, type: "Lab" },
+    ],
+  },
+  {
+    semester: 2, courses: [
+      { code: "CSE201", title: "Object-Oriented Programming", credits: 4, type: "Core" },
+      { code: "MAT201", title: "Engineering Mathematics II", credits: 4, type: "Core" },
+      { code: "CHE201", title: "Engineering Chemistry", credits: 3, type: "Core" },
+      { code: "EEE201", title: "Basic Electrical Engineering", credits: 3, type: "Core" },
+      { code: "CSE202", title: "OOP Lab", credits: 2, type: "Lab" },
+      { code: "CHE202", title: "Chemistry Lab", credits: 1, type: "Lab" },
+    ],
+  },
+  {
+    semester: 3, courses: [
+      { code: "CSE301", title: "Data Structures", credits: 4, type: "Core" },
+      { code: "CSE302", title: "Digital Logic Design", credits: 3, type: "Core" },
+      { code: "MAT301", title: "Discrete Mathematics", credits: 4, type: "Core" },
+      { code: "CSE303", title: "Computer Organisation", credits: 3, type: "Core" },
+      { code: "CSE304", title: "DS Lab", credits: 2, type: "Lab" },
+      { code: "HSS301", title: "Economics for Engineers", credits: 2, type: "Elective" },
+      { code: "CSE305", title: "Mini Project I", credits: 1, type: "Lab" },
+    ],
+  },
+  {
+    semester: 4, courses: [
+      { code: "CSE401", title: "Design & Analysis of Algorithms", credits: 4, type: "Core" },
+      { code: "CSE402", title: "Database Management Systems", credits: 4, type: "Core" },
+      { code: "CSE403", title: "Operating Systems", credits: 4, type: "Core" },
+      { code: "MAT401", title: "Probability & Statistics", credits: 3, type: "Core" },
+      { code: "CSE404", title: "DBMS Lab", credits: 2, type: "Lab" },
+      { code: "CSE405", title: "OS Lab", credits: 2, type: "Lab" },
+    ],
+  },
+  {
+    semester: 5, courses: [
+      { code: "CSE501", title: "Computer Networks", credits: 4, type: "Core" },
+      { code: "CSE502", title: "Software Engineering", credits: 3, type: "Core" },
+      { code: "CSE503", title: "Theory of Computation", credits: 3, type: "Core" },
+      { code: "CSE504", title: "Machine Learning", credits: 3, type: "Elective" },
+      { code: "CSE505", title: "Networks Lab", credits: 2, type: "Lab" },
+    ],
+  },
+  {
+    semester: 6, courses: [
+      { code: "CSE601", title: "Data Structures (Advanced)", credits: 4, type: "Core" },
+      { code: "CSE602", title: "DBMS (Advanced)", credits: 4, type: "Core" },
+      { code: "CSE603", title: "Artificial Intelligence", credits: 3, type: "Core" },
+      { code: "CSE604", title: "Operating Systems (Advanced)", credits: 4, type: "Core" },
+      { code: "CSE605", title: "Cloud Computing", credits: 3, type: "Elective" },
+    ],
+  },
+  {
+    semester: 7, courses: [
+      { code: "CSE701", title: "Compiler Design", credits: 4, type: "Core" },
+      { code: "CSE702", title: "Information Security", credits: 3, type: "Core" },
+      { code: "CSE703", title: "Deep Learning", credits: 3, type: "Elective" },
+      { code: "CSE704", title: "Industry Internship", credits: 6, type: "Core" },
+      { code: "CSE705", title: "Seminar", credits: 2, type: "Core" },
+    ],
+  },
+  {
+    semester: 8, courses: [
+      { code: "CSE801", title: "Project Work", credits: 10, type: "Core" },
+      { code: "CSE802", title: "Comprehensive Viva", credits: 2, type: "Core" },
+      { code: "CSE803", title: "Blockchain & Web3", credits: 3, type: "Elective" },
+      { code: "CSE804", title: "Ethics in Computing", credits: 2, type: "Core" },
+    ],
+  },
 ];

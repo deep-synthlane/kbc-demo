@@ -20,11 +20,11 @@ import { ROLES, UNIVERSITY, type Role } from "@/lib/mockData";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Sign in · KCG University Digital Campus" },
+      { title: "Sign in · Knowledge Consortium of Gujarat" },
       {
         name: "description",
         content:
-          "Single sign-on for students, faculty, administrators and staff at KCG University.",
+          "Single sign-on for students, faculty, administrators and staff at Knowledge Consortium of Gujarat.",
       },
     ],
   }),
@@ -65,9 +65,7 @@ function LoginPage() {
 
         <div className="relative">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
-              <GraduationCap className="h-6 w-6" />
-            </div>
+            <img src={UNIVERSITY.logo} alt="" className="h-12 w-12 rounded-full object-cover object-left" />
             <div>
               <div className="font-display text-xl font-semibold">{UNIVERSITY.name}</div>
               <div className="text-xs uppercase tracking-[0.2em] text-sidebar-foreground/60">
@@ -113,9 +111,7 @@ function LoginPage() {
       <div className="flex items-center justify-center p-6 sm:p-10 lg:p-16">
         <div className="w-full max-w-md">
           <div className="flex lg:hidden items-center gap-3 mb-8">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <GraduationCap className="h-5 w-5" />
-            </div>
+            <img src={UNIVERSITY.logo} alt="" className="h-10 w-10 rounded-full object-cover object-left" />
             <div className="font-display text-lg font-semibold">{UNIVERSITY.name}</div>
           </div>
 
@@ -164,7 +160,7 @@ function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@kcgu.edu.in"
+                placeholder="you@kcg.edu.in"
               />
             </div>
             <div className="space-y-1.5">
@@ -203,7 +199,14 @@ function LoginPage() {
             </div>
           </form>
 
-          <p className="mt-8 text-center text-xs text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            New student?{" "}
+            <Link to="/apply" className="text-primary hover:underline font-medium">
+              Apply here
+            </Link>
+          </p>
+
+          <p className="mt-3 text-center text-xs text-muted-foreground">
             Demo build · Choose any role and sign in with the prefilled credentials.{" "}
             <Link to="/" className="text-primary hover:underline">
               Help
