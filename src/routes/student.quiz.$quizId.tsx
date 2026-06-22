@@ -1,11 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { QUIZ_QUESTIONS } from "@/lib/mockData";
+import { useCourses } from "@/lib/courseStore";
 
 export const Route = createFileRoute("/student/quiz/$quizId")({
   head: () => ({ meta: [{ title: "Quiz · KCG" }] }),
@@ -13,23 +13,55 @@ export const Route = createFileRoute("/student/quiz/$quizId")({
 });
 
 function QuizPage() {
+  const { quizId } = useParams({ from: "/student/quiz/$quizId" });
+  const { getQuizQuestions, findQuizLocation, markLessonDone } = useCourses();
+  const questions = getQuizQuestions(quizId);
+
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [seconds, setSeconds] = useState(15 * 60);
 
   useEffect(() => {
     if (submitted) return;
-    const t = setInterval(() => setSeconds((s) => (s <= 1 ? (setSubmitted(true), 0) : s - 1)), 1000);
+    const t = setInterval(() => setSeconds((s) => {
+      if (s <= 1) {
+        setSubmitted(true);
+        const loc = findQuizLocation(quizId);
+        if (loc) markLessonDone(loc.courseId, loc.unitId, quizId);
+        return 0;
+      }
+      return s - 1;
+    }), 1000);
     return () => clearInterval(t);
-  }, [submitted]);
+  }, [submitted, quizId, findQuizLocation, markLessonDone]);
 
-  const handleSubmit = useCallback(() => setSubmitted(true), []);
+  const handleSubmit = useCallback(() => {
+    setSubmitted(true);
+    const loc = findQuizLocation(quizId);
+    if (loc) markLessonDone(loc.courseId, loc.unitId, quizId);
+  }, [quizId, findQuizLocation, markLessonDone]);
   const answered = Object.keys(answers).length;
   const score = submitted
-    ? QUIZ_QUESTIONS.reduce((s, q) => s + (answers[q.id] === q.correctAnswer ? 1 : 0), 0)
+    ? questions.reduce((s, q) => s + (answers[q.id] === q.correctAnswer ? 1 : 0), 0)
     : 0;
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss = String(seconds % 60).padStart(2, "0");
+
+  if (questions.length === 0) {
+    return (
+      <div className="space-y-4">
+        <Link
+          to="/student/assessments"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" /> Back to assessments
+        </Link>
+        <div className="rounded-xl border p-8 text-center">
+          <p className="text-muted-foreground">No questions found for this quiz. It may not be published yet.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -43,12 +75,12 @@ function QuizPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-semibold">
-            {submitted ? "Quiz Results" : "Quiz: Data Structures"}
+            {submitted ? "Quiz Results" : "Quiz"}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {submitted
-              ? `You scored ${score} out of ${QUIZ_QUESTIONS.length}`
-              : `${QUIZ_QUESTIONS.length} questions · MCQ`}
+              ? `You scored ${score} out of ${questions.length}`
+              : `${questions.length} questions · MCQ`}
           </p>
         </div>
         {!submitted && (
@@ -62,13 +94,13 @@ function QuizPage() {
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-lg bg-success/10 p-4 text-center">
             <div className="text-3xl font-display font-semibold text-success">
-              {score}/{QUIZ_QUESTIONS.length}
+              {score}/{questions.length}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Score</div>
           </div>
           <div className="rounded-lg bg-primary/10 p-4 text-center">
             <div className="text-3xl font-display font-semibold text-primary">
-              {Math.round((score / QUIZ_QUESTIONS.length) * 100)}%
+              {Math.round((score / questions.length) * 100)}%
             </div>
             <div className="text-xs text-muted-foreground mt-1">Percentage</div>
           </div>
@@ -85,7 +117,7 @@ function QuizPage() {
 
       <div className="grid lg:grid-cols-[1fr_200px] gap-6">
         <div className="space-y-4">
-          {QUIZ_QUESTIONS.map((q, qi) => (
+          {questions.map((q, qi) => (
             <div key={q.id} className="rounded-xl border bg-card p-5 shadow-sm">
               <div className="flex items-start gap-3 mb-4">
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-sm font-semibold">
@@ -137,7 +169,7 @@ function QuizPage() {
 
           {!submitted && (
             <Button size="lg" className="w-full" onClick={handleSubmit} disabled={answered === 0}>
-              Submit Quiz ({answered}/{QUIZ_QUESTIONS.length} answered)
+              Submit Quiz ({answered}/{questions.length} answered)
             </Button>
           )}
 
@@ -153,7 +185,7 @@ function QuizPage() {
             <div className="rounded-xl border bg-card p-4 shadow-sm sticky top-20">
               <h3 className="font-semibold text-sm mb-3">Question Navigator</h3>
               <div className="grid grid-cols-5 gap-2">
-                {QUIZ_QUESTIONS.map((q, i) => (
+                {questions.map((q, i) => (
                   <div
                     key={q.id}
                     className={cn(
@@ -168,9 +200,9 @@ function QuizPage() {
                 ))}
               </div>
               <div className="mt-3">
-                <Progress value={(answered / QUIZ_QUESTIONS.length) * 100} className="h-1.5" />
+                <Progress value={(answered / questions.length) * 100} className="h-1.5" />
                 <p className="text-xs text-muted-foreground mt-1">
-                  {answered} of {QUIZ_QUESTIONS.length} answered
+                  {answered} of {questions.length} answered
                 </p>
               </div>
             </div>

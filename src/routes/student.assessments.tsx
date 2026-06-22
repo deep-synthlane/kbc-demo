@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { FileText, Upload, MessageSquare, HelpCircle } from "lucide-react";
+import { useState, useMemo } from "react";
+import { FileText, Upload, MessageSquare, HelpCircle, Clock, BookOpen, CheckCircle2 } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -36,6 +36,7 @@ import {
 } from "recharts";
 import { PageHeader } from "@/components/RoleShell";
 import { ASSIGNMENTS, QUIZ_RESULT } from "@/lib/mockData";
+import { useCourses } from "@/lib/courseStore";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/student/assessments")({
@@ -43,18 +44,65 @@ export const Route = createFileRoute("/student/assessments")({
   component: Assessments,
 });
 
-const QUIZ_HISTORY = [
-  { name: "Linear Structures", score: 18, total: 20 },
-  { name: "Stacks & Queues", score: 16, total: 20 },
-  { name: "ER Modeling", score: 19, total: 20 },
-  { name: "SQL Joins", score: 14, total: 20 },
-  { name: "Search Algos", score: 17, total: 20 },
-];
+const SEED_SCORES: Record<string, { score: number; total: number }> = {
+  q1: { score: 18, total: 20 },
+  q2: { score: 16, total: 20 },
+  q3: { score: 17, total: 20 },
+};
+
+type QuizInfo = {
+  id: string;
+  title: string;
+  duration: string;
+  done: boolean;
+  courseTitle: string;
+  courseCode: string;
+  unitTitle: string;
+};
 
 function Assessments() {
+  const { courses } = useCourses();
   const [assignments, setAssignments] = useState(ASSIGNMENTS.map((a) => ({ ...a })));
   const [submitDialog, setSubmitDialog] = useState<string | null>(null);
   const submitTarget = assignments.find((a) => a.id === submitDialog);
+
+  const allQuizzes = useMemo<QuizInfo[]>(() => {
+    const result: QuizInfo[] = [];
+    for (const course of courses) {
+      for (const unit of course.units) {
+        for (const lesson of unit.lessons) {
+          if (lesson.type === "quiz") {
+            result.push({
+              id: lesson.id,
+              title: lesson.title,
+              duration: lesson.duration,
+              done: lesson.done,
+              courseTitle: course.title,
+              courseCode: course.code,
+              unitTitle: unit.title,
+            });
+          }
+        }
+      }
+    }
+    return result;
+  }, [courses]);
+
+  const availableQuizzes = allQuizzes.filter((q) => !q.done);
+  const completedQuizzes = allQuizzes.filter((q) => q.done);
+
+  const chartData = completedQuizzes.slice(0, 6).map((q) => {
+    const seed = SEED_SCORES[q.id];
+    return {
+      name: q.title.replace(/^Quiz:\s*/i, ""),
+      score: seed?.score ?? Math.floor(Math.random() * 5 + 15),
+      total: seed?.total ?? 20,
+    };
+  });
+
+  const avgScore = chartData.length > 0
+    ? Math.round(chartData.reduce((s, d) => s + (d.score / d.total) * 100, 0) / chartData.length)
+    : 0;
 
   function handleSubmitAssignment() {
     if (!submitDialog) return;
@@ -79,40 +127,121 @@ function Assessments() {
           <TabsTrigger value="results">Results & Feedback</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="quizzes" className="space-y-4">
-          <div className="rounded-xl border bg-card p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold">Recent Quiz Performance</h3>
-                <p className="text-xs text-muted-foreground">Last 5 quizzes across courses</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-success/15 text-success border-0">Avg 84%</Badge>
-                <Button size="sm" asChild>
-                  <Link to="/student/quiz/$quizId" params={{ quizId: "q1" }}>
-                    <HelpCircle className="h-3.5 w-3.5 mr-1.5" /> Take Quiz
-                  </Link>
-                </Button>
-              </div>
+        <TabsContent value="quizzes" className="space-y-6">
+          {/* Available Quizzes */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Available Quizzes</h3>
+              <Badge variant="outline">{availableQuizzes.length} pending</Badge>
             </div>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={QUIZ_HISTORY}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                  <XAxis dataKey="name" fontSize={11} stroke="var(--color-muted-foreground)" />
-                  <YAxis fontSize={12} stroke="var(--color-muted-foreground)" />
-                  <Tooltip
-                    contentStyle={{
-                      background: "var(--color-card)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                  />
-                  <Bar dataKey="score" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            {availableQuizzes.length === 0 ? (
+              <div className="rounded-xl border border-dashed p-6 text-center text-muted-foreground text-sm">
+                No quizzes available right now. Check back later!
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {availableQuizzes.map((q) => (
+                  <div key={q.id} className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="text-sm font-semibold leading-tight">{q.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">{q.courseCode} · {q.courseTitle}</p>
+                      </div>
+                      <HelpCircle className="h-4 w-4 shrink-0 text-primary" />
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> {q.duration}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <BookOpen className="h-3 w-3" /> {q.unitTitle.split(" · ")[1] ?? q.unitTitle}
+                      </span>
+                    </div>
+                    <Button size="sm" className="w-full" asChild>
+                      <Link to="/student/quiz/$quizId" params={{ quizId: q.id }}>
+                        Take Quiz
+                      </Link>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Completed Quizzes / Performance */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Completed Quizzes</h3>
+              {avgScore > 0 && (
+                <Badge className="bg-success/15 text-success border-0">Avg {avgScore}%</Badge>
+              )}
             </div>
+            {completedQuizzes.length === 0 ? (
+              <div className="rounded-xl border border-dashed p-6 text-center text-muted-foreground text-sm">
+                You haven't completed any quizzes yet. Take one above to see your results here.
+              </div>
+            ) : (
+              <>
+                {chartData.length > 0 && (
+                  <div className="rounded-xl border bg-card p-5 shadow-sm">
+                    <p className="text-xs text-muted-foreground mb-3">Recent quiz scores</p>
+                    <div className="h-52">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                          <XAxis dataKey="name" fontSize={11} stroke="var(--color-muted-foreground)" />
+                          <YAxis fontSize={12} stroke="var(--color-muted-foreground)" />
+                          <Tooltip
+                            contentStyle={{
+                              background: "var(--color-card)",
+                              border: "1px solid var(--color-border)",
+                              borderRadius: 8,
+                              fontSize: 12,
+                            }}
+                          />
+                          <Bar dataKey="score" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+                <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Quiz</TableHead>
+                        <TableHead>Course</TableHead>
+                        <TableHead>Score</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {completedQuizzes.map((q) => {
+                        const seed = SEED_SCORES[q.id];
+                        return (
+                          <TableRow key={q.id}>
+                            <TableCell className="font-medium">{q.title}</TableCell>
+                            <TableCell className="text-muted-foreground">{q.courseCode}</TableCell>
+                            <TableCell>
+                              {seed ? (
+                                <span className="font-semibold">{seed.score}/{seed.total}</span>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">Submitted</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-success/15 text-success border-0">
+                                <CheckCircle2 className="h-3 w-3 mr-1" /> Done
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
+            )}
           </div>
         </TabsContent>
 

@@ -247,10 +247,10 @@ export const ADMIN_KPIS = {
 };
 
 export const ENROLLMENT_BY_DEPT = [
-  { dept: "CSE", students: 1240 },
-  { dept: "ECE", students: 980 },
-  { dept: "MECH", students: 720 },
-  { dept: "CIVIL", students: 540 },
+  { dept: "BBA", students: 1240 },
+  { dept: "BCA", students: 980 },
+  { dept: "BE", students: 720 },
+  { dept: "BCom", students: 540 },
   { dept: "MBA", students: 612 },
   { dept: "B.Sc", students: 770 },
 ];
@@ -261,15 +261,8 @@ export const FEE_COLLECTION = [
   { name: "Overdue", value: 8 },
 ];
 
-export const APPLICATIONS = [
-  { id: "AP-2026-0142", name: "Rohan Mehta", program: "B.Tech CSE", status: "Pending Review", docs: "Complete", verified: false, meritScore: null },
-  { id: "AP-2026-0143", name: "Sneha Pillai", program: "B.Tech ECE", status: "Approved", docs: "Complete", verified: true, meritScore: 94.5 },
-  { id: "AP-2026-0144", name: "Vikram Singh", program: "MBA", status: "Documents Required", docs: "Incomplete", verified: false, meritScore: null },
-  { id: "AP-2026-0145", name: "Lakshmi Narayan", program: "B.Tech MECH", status: "Pending Review", docs: "Complete", verified: false, meritScore: null },
-  { id: "AP-2026-0146", name: "Aarav Kapoor", program: "B.Sc Data Science", status: "Approved", docs: "Complete", verified: true, meritScore: 91.2 },
-  { id: "AP-2026-0147", name: "Diya Sharma", program: "B.Tech CSE", status: "Rejected", docs: "Complete", verified: true, meritScore: null },
-  { id: "AP-2026-0148", name: "Karan Joshi", program: "B.Tech CIVIL", status: "Pending Review", docs: "Complete", verified: false, meritScore: null },
-];
+export { APPLICATIONS } from "./admissions";
+export type { AdmissionApplication, ApplicationDocument } from "./admissions";
 
 export const STUDENTS_DIRECTORY = [
   { id: "KCGU/22/CSE/0184", name: "Ananya Iyer", dept: "CSE", sem: 6, cgpa: 8.74, attendance: 89 },

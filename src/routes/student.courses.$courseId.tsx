@@ -27,7 +27,7 @@ import {
   ResponsiveContainer,
   PolarAngleAxis,
 } from "recharts";
-import { COURSES, UNITS } from "@/lib/mockData";
+import { useCourses } from "@/lib/courseStore";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/courses/$courseId")({
@@ -38,8 +38,11 @@ export const Route = createFileRoute("/student/courses/$courseId")({
 function CourseDetail() {
   const { courseId } = useParams({ from: "/student/courses/$courseId" });
   const navigate = useNavigate();
-  const course = COURSES.find((c) => c.id === courseId) ?? COURSES[0];
+  const { courses } = useCourses();
+  const course = courses.find((c) => c.id === courseId) ?? courses[0];
   const [open, setOpen] = useState<"video" | "pdf" | null>(null);
+
+  const units = course.units;
 
   return (
     <div className="space-y-6">
@@ -61,7 +64,7 @@ function CourseDetail() {
             <div className="mt-5 flex flex-wrap gap-3 text-sm">
               <Stat icon={Award} label={`${course.credits} credits`} />
               <Stat icon={Users} label={`${course.students} students`} />
-              <Stat icon={Clock} label={`${course.units} units`} />
+              <Stat icon={Clock} label={`${units.length} units`} />
             </div>
           </div>
           <div className="w-48">
@@ -76,8 +79,13 @@ function CourseDetail() {
         {/* Units accordion */}
         <div className="space-y-4">
           <h2 className="font-display text-xl font-semibold">Course Content</h2>
-          <Accordion type="multiple" defaultValue={["u1", "u2"]} className="space-y-3">
-            {UNITS.map((u) => (
+          {units.length === 0 && (
+            <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground">
+              <p className="text-sm">No content published yet. Check back soon!</p>
+            </div>
+          )}
+          <Accordion type="multiple" defaultValue={units.filter((u) => u.status !== "locked").map((u) => u.id)} className="space-y-3">
+            {units.map((u) => (
               <AccordionItem
                 key={u.id}
                 value={u.id}
@@ -145,6 +153,9 @@ function CourseDetail() {
                         </button>
                       );
                     })}
+                    {u.lessons.length === 0 && (
+                      <p className="text-xs text-muted-foreground italic py-2">No lessons in this unit yet.</p>
+                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -177,11 +188,18 @@ function CourseDetail() {
 
           <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
             <h3 className="font-semibold">Quick Actions</h3>
-            <Button variant="outline" className="w-full justify-start" asChild>
-              <Link to="/student/quiz/$quizId" params={{ quizId: "q2" }}>
+            {units.flatMap((u) => u.lessons).find((l) => l.type === "quiz" && !l.done) && (
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => {
+                  const quizLesson = units.flatMap((u) => u.lessons).find((l) => l.type === "quiz" && !l.done);
+                  if (quizLesson) navigate({ to: "/student/quiz/$quizId", params: { quizId: quizLesson.id } });
+                }}
+              >
                 <HelpCircle className="h-4 w-4 mr-2" /> Attempt next quiz
-              </Link>
-            </Button>
+              </Button>
+            )}
             <Button variant="outline" className="w-full justify-start" onClick={() => setOpen("pdf")}>
               <FileText className="h-4 w-4 mr-2" /> Open reference notes
             </Button>
@@ -196,7 +214,7 @@ function CourseDetail() {
       <Dialog open={open === "video"} onOpenChange={(v) => !v && setOpen(null)}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Lesson · Singly Linked Lists</DialogTitle>
+            <DialogTitle>Lesson · Video Lecture</DialogTitle>
           </DialogHeader>
           <div className="aspect-video bg-black rounded-lg grid place-items-center text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-black/80" />
@@ -219,14 +237,13 @@ function CourseDetail() {
           </DialogHeader>
           <div className="aspect-[3/4] max-h-[60vh] bg-muted rounded-lg p-8 overflow-auto">
             <div className="max-w-prose mx-auto space-y-3 text-sm">
-              <h3 className="font-display text-lg font-semibold">Chapter 3 — Linked Lists</h3>
-              <p>A linked list is a linear data structure where each element is a separate object…</p>
-              <p>Each node contains a value and a pointer to the next node. Variants include singly, doubly, and circular linked lists.</p>
-              <h4 className="font-semibold pt-2">Operations</h4>
+              <h3 className="font-display text-lg font-semibold">Course Notes</h3>
+              <p>These are reference notes for the current topic. In a production system, this would render the uploaded PDF document.</p>
+              <h4 className="font-semibold pt-2">Key Concepts</h4>
               <ul className="list-disc ml-5 space-y-1">
-                <li>Insertion at head — O(1)</li>
-                <li>Insertion at tail — O(n) without tail pointer</li>
-                <li>Deletion — O(n) for search + O(1) removal</li>
+                <li>Core definitions and terminology</li>
+                <li>Algorithmic complexity analysis</li>
+                <li>Implementation patterns and trade-offs</li>
               </ul>
             </div>
           </div>
