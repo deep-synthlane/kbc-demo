@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Download, FileText, TrendingUp } from "lucide-react";
+import { Download, ExternalLink, FileText, Library, TrendingUp } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -104,6 +104,31 @@ function Reports() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-card p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary shrink-0">
+              <Library className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Library Usage & Analytics</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                eLibrary circulation, usage trends, and resource analytics in Knimbus.
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" asChild>
+            <a
+              href="https://nitpy.knimbus.com/librarian/v2/elibrarySetup/reports/overview"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" /> Open Analytics
+            </a>
+          </Button>
         </div>
       </div>
 

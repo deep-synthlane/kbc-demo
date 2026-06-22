@@ -9,6 +9,7 @@ import {
   Calendar,
   ClipboardCheck,
   BookMarked,
+  Library,
 } from "lucide-react";
 import { RoleShell, type NavItem } from "@/components/RoleShell";
 import { getSession } from "@/lib/session";
@@ -23,6 +24,12 @@ const NAV: NavItem[] = [
   { label: "Timetable", to: "/teacher/timetable", icon: Calendar },
   { label: "Examinations", to: "/teacher/examinations", icon: ClipboardCheck },
   { label: "Curriculum", to: "/teacher/curriculum", icon: BookMarked },
+  {
+    label: "eLibrary",
+    to: "https://nitpy.knimbus.com/portal/v2/default/home",
+    icon: Library,
+    external: true,
+  },
 ];
 
 function TeacherLayout() {

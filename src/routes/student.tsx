@@ -12,7 +12,6 @@ import {
   IndianRupee,
   FileBadge,
   Library,
-  Bell,
 } from "lucide-react";
 import { RoleShell, type NavItem } from "@/components/RoleShell";
 import { getSession } from "@/lib/session";
@@ -30,12 +29,6 @@ const NAV: NavItem[] = [
     label: "eLibrary",
     to: "https://nitpy.knimbus.com/portal/v2/default/home",
     icon: Library,
-    external: true,
-  },
-  {
-    label: "Notifications",
-    to: "https://nitpy.knimbus.com/librarian/v2/elibrarySetup/notifications",
-    icon: Bell,
     external: true,
   },
   { label: "My Applications", to: "/student/applications", icon: FileBadge },

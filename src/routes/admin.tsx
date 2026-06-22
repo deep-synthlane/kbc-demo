@@ -13,6 +13,7 @@ import {
   UserCog,
   FolderOpen,
   ShieldCheck,
+  Bell,
 } from "lucide-react";
 import { RoleShell, type NavItem } from "@/components/RoleShell";
 import { getSession } from "@/lib/session";
@@ -32,9 +33,9 @@ const NAV: NavItem[] = [
   { label: "Examinations", to: "/admin/examinations", icon: FileSpreadsheet },
   { label: "Reports", to: "/admin/reports", icon: BarChart3 },
   {
-    label: "Library Usage & Analytics",
-    to: "https://nitpy.knimbus.com/librarian/v2/elibrarySetup/reports/overview",
-    icon: BarChart3,
+    label: "Notifications",
+    to: "https://nitpy.knimbus.com/librarian/v2/elibrarySetup/notifications",
+    icon: Bell,
     external: true,
   },
   {
