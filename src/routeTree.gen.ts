@@ -33,6 +33,7 @@ import { Route as StudentDashboardRouteImport } from './routes/student.dashboard
 import { Route as StudentCurriculumRouteImport } from './routes/student.curriculum'
 import { Route as StudentCoursesRouteImport } from './routes/student.courses'
 import { Route as StudentAssessmentsRouteImport } from './routes/student.assessments'
+import { Route as StudentApplicationsRouteImport } from './routes/student.applications'
 import { Route as StaffTasksRouteImport } from './routes/staff.tasks'
 import { Route as StaffStudentsRouteImport } from './routes/staff.students'
 import { Route as StaffRecordsRouteImport } from './routes/staff.records'
@@ -176,6 +177,11 @@ const StudentCoursesRoute = StudentCoursesRouteImport.update({
 const StudentAssessmentsRoute = StudentAssessmentsRouteImport.update({
   id: '/assessments',
   path: '/assessments',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentApplicationsRoute = StudentApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
   getParentRoute: () => StudentRoute,
 } as any)
 const StaffTasksRoute = StaffTasksRouteImport.update({
@@ -325,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/staff/records': typeof StaffRecordsRoute
   '/staff/students': typeof StaffStudentsRoute
   '/staff/tasks': typeof StaffTasksRoute
+  '/student/applications': typeof StudentApplicationsRoute
   '/student/assessments': typeof StudentAssessmentsRoute
   '/student/courses': typeof StudentCoursesRouteWithChildren
   '/student/curriculum': typeof StudentCurriculumRoute
@@ -375,6 +382,7 @@ export interface FileRoutesByTo {
   '/staff/records': typeof StaffRecordsRoute
   '/staff/students': typeof StaffStudentsRoute
   '/staff/tasks': typeof StaffTasksRoute
+  '/student/applications': typeof StudentApplicationsRoute
   '/student/assessments': typeof StudentAssessmentsRoute
   '/student/curriculum': typeof StudentCurriculumRoute
   '/student/dashboard': typeof StudentDashboardRoute
@@ -424,6 +432,7 @@ export interface FileRoutesById {
   '/staff/records': typeof StaffRecordsRoute
   '/staff/students': typeof StaffStudentsRoute
   '/staff/tasks': typeof StaffTasksRoute
+  '/student/applications': typeof StudentApplicationsRoute
   '/student/assessments': typeof StudentAssessmentsRoute
   '/student/courses': typeof StudentCoursesRouteWithChildren
   '/student/curriculum': typeof StudentCurriculumRoute
@@ -476,6 +485,7 @@ export interface FileRouteTypes {
     | '/staff/records'
     | '/staff/students'
     | '/staff/tasks'
+    | '/student/applications'
     | '/student/assessments'
     | '/student/courses'
     | '/student/curriculum'
@@ -526,6 +536,7 @@ export interface FileRouteTypes {
     | '/staff/records'
     | '/staff/students'
     | '/staff/tasks'
+    | '/student/applications'
     | '/student/assessments'
     | '/student/curriculum'
     | '/student/dashboard'
@@ -574,6 +585,7 @@ export interface FileRouteTypes {
     | '/staff/records'
     | '/staff/students'
     | '/staff/tasks'
+    | '/student/applications'
     | '/student/assessments'
     | '/student/courses'
     | '/student/curriculum'
@@ -777,6 +789,13 @@ declare module '@tanstack/react-router' {
       path: '/assessments'
       fullPath: '/student/assessments'
       preLoaderRoute: typeof StudentAssessmentsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/applications': {
+      id: '/student/applications'
+      path: '/applications'
+      fullPath: '/student/applications'
+      preLoaderRoute: typeof StudentApplicationsRouteImport
       parentRoute: typeof StudentRoute
     }
     '/staff/tasks': {
@@ -1037,6 +1056,7 @@ const StudentCoursesRouteWithChildren = StudentCoursesRoute._addFileChildren(
 )
 
 interface StudentRouteChildren {
+  StudentApplicationsRoute: typeof StudentApplicationsRoute
   StudentAssessmentsRoute: typeof StudentAssessmentsRoute
   StudentCoursesRoute: typeof StudentCoursesRouteWithChildren
   StudentCurriculumRoute: typeof StudentCurriculumRoute
@@ -1050,6 +1070,7 @@ interface StudentRouteChildren {
 }
 
 const StudentRouteChildren: StudentRouteChildren = {
+  StudentApplicationsRoute: StudentApplicationsRoute,
   StudentAssessmentsRoute: StudentAssessmentsRoute,
   StudentCoursesRoute: StudentCoursesRouteWithChildren,
   StudentCurriculumRoute: StudentCurriculumRoute,

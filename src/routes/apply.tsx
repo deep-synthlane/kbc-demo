@@ -10,6 +10,9 @@ import {
   Smartphone,
   Building2,
   ShieldCheck,
+  Download,
+  FileText,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import {
   ADMISSION_REQUIRED_DOCS,
@@ -31,6 +38,14 @@ import {
   APPLICATION_FEE,
 } from "@/lib/admissions";
 import { UNIVERSITY } from "@/lib/mockData";
+import {
+  generateApplicationId,
+  generateTransactionId,
+  saveApplication,
+  pushNotification,
+  type StoredApplication,
+} from "@/lib/applicationStore";
+import { downloadReceipt } from "@/lib/pdfReceipt";
 
 export const Route = createFileRoute("/apply")({
   head: () => ({
@@ -40,23 +55,58 @@ export const Route = createFileRoute("/apply")({
 });
 
 const STEPS = ["Personal Details", "Academic Details", "Documents"] as const;
-
 const PAYMENT_METHODS = [
-  { id: "upi", label: "UPI", icon: Smartphone, detail: "Google Pay, PhonePe, Paytm" },
-  { id: "card", label: "Debit / Credit Card", icon: CreditCard, detail: "Visa, Mastercard, RuPay" },
-  { id: "netbanking", label: "Net Banking", icon: Building2, detail: "All major Indian banks" },
+  { id: "UPI", label: "UPI", icon: Smartphone, detail: "Google Pay, PhonePe, Paytm" },
+  { id: "Card", label: "Debit / Credit Card", icon: CreditCard, detail: "Visa, Mastercard, RuPay" },
+  { id: "Net Banking", label: "Net Banking", icon: Building2, detail: "All major Indian banks" },
 ] as const;
-
 type PaymentMethod = (typeof PAYMENT_METHODS)[number]["id"];
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  gender: string;
+  guardianName: string;
+  address: string;
+  tenthMarks: string;
+  twelfthMarks: string;
+  previousInstitution: string;
+  program: string;
+  entranceExamScore: string;
+}
+
+const EMPTY_FORM: FormData = {
+  name: "", email: "", phone: "", dateOfBirth: "", gender: "",
+  guardianName: "", address: "", tenthMarks: "", twelfthMarks: "",
+  previousInstitution: "", program: "", entranceExamScore: "",
+};
+
+function statusColor(s: string) {
+  if (s === "Payment Completed" || s === "Approved" || s === "Enrolled")
+    return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+  if (s === "Rejected") return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+  if (s === "Documents Pending")
+    return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-600";
+  return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+}
 
 function ApplyPage() {
   const [step, setStep] = useState(0);
+  const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [uploads, setUploads] = useState<Record<string, boolean>>({});
   const [declared, setDeclared] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("UPI");
   const [paying, setPaying] = useState(false);
+  const [submittedApp, setSubmittedApp] = useState<StoredApplication | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  function set(field: keyof FormData) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm((f) => ({ ...f, [field]: e.target.value }));
+  }
 
   function handleSubmit() {
     setShowPayment(true);
@@ -65,64 +115,208 @@ function ApplyPage() {
   function handlePayment() {
     setPaying(true);
     window.setTimeout(() => {
+      const now = new Date().toISOString();
+      const appId = generateApplicationId();
+      const txnId = generateTransactionId();
+
+      const app: StoredApplication = {
+        id: appId,
+        transactionId: txnId,
+        submittedAt: now,
+        lastUpdated: now,
+        name: form.name || "Applicant",
+        email: form.email || "applicant@example.com",
+        phone: form.phone || "—",
+        dateOfBirth: form.dateOfBirth || "—",
+        gender: form.gender || "—",
+        guardianName: form.guardianName || "—",
+        address: form.address || "—",
+        tenthMarks: Number(form.tenthMarks) || 0,
+        twelfthMarks: Number(form.twelfthMarks) || 0,
+        previousInstitution: form.previousInstitution || "—",
+        program: form.program || "—",
+        entranceExamScore: form.entranceExamScore ? Number(form.entranceExamScore) : null,
+        paymentMethod,
+        paymentStatus: "Completed",
+        feeAmount: APPLICATION_FEE,
+        paymentDate: now,
+        documents: ADMISSION_REQUIRED_DOCS.map((name) => ({
+          name,
+          uploaded: !!uploads[name],
+          fileName: uploads[name] ? `${name.toLowerCase().replace(/\s+/g, "_")}_${appId}.pdf` : undefined,
+        })),
+        status: "Payment Completed",
+        auditLog: [
+          {
+            id: crypto.randomUUID(),
+            action: "Application submitted",
+            by: form.name || "Applicant",
+            role: "student",
+            at: now,
+          },
+          {
+            id: crypto.randomUUID(),
+            action: "Payment completed",
+            by: form.name || "Applicant",
+            role: "student",
+            note: `₹${APPLICATION_FEE.toLocaleString("en-IN")} via ${paymentMethod}. Txn: ${txnId}`,
+            at: now,
+          },
+        ],
+      };
+
+      saveApplication(app);
+
+      // Notifications
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: "submission",
+        title: "Application Submitted",
+        body: `Application ${appId} submitted for ${app.program}. Payment of ₹${APPLICATION_FEE.toLocaleString("en-IN")} received.`,
+        applicationId: appId,
+        createdAt: now,
+        read: false,
+        for: "student",
+        studentEmail: app.email,
+      });
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: "new_application",
+        title: `New Application: ${appId}`,
+        body: `${app.name} applied for ${app.program}. Payment received.`,
+        applicationId: appId,
+        createdAt: now,
+        read: false,
+        for: "admin",
+        studentEmail: app.email,
+      });
+
       setPaying(false);
-      setSubmitted(true);
-    }, 1200);
+      setSubmittedApp(app);
+    }, 1400);
   }
 
-  if (submitted) {
+  async function handleDownload() {
+    if (!submittedApp) return;
+    setPdfLoading(true);
+    try {
+      await downloadReceipt(submittedApp);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
+  // ── Success modal ────────────────────────────────────────────────────────
+  if (submittedApp) {
+    const a = submittedApp;
+    const appDate = new Date(a.submittedAt).toLocaleDateString("en-IN", {
+      day: "2-digit", month: "long", year: "numeric",
+    });
+
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="w-full max-w-md text-center space-y-4">
-          <div className="mx-auto h-20 w-20 rounded-full bg-green-100 dark:bg-green-900/30 grid place-items-center">
-            <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="w-full max-w-lg bg-card border rounded-2xl shadow-lg overflow-hidden">
+          {/* Green header */}
+          <div className="bg-green-600 dark:bg-green-700 px-8 py-6 text-white text-center">
+            <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-white/20 grid place-items-center">
+              <CheckCircle2 className="h-8 w-8" />
+            </div>
+            <h1 className="text-xl font-bold font-display">Application Submitted!</h1>
+            <p className="text-green-100 text-sm mt-1">Payment received · Under review</p>
           </div>
-          <h1 className="font-display text-2xl font-semibold">Application Submitted!</h1>
-          <p className="text-muted-foreground">
-            Your application has been received and is under review.
-          </p>
-          <Badge variant="outline" className="text-lg font-mono px-4 py-2">
-            AP-2026-0149
-          </Badge>
-          <p className="text-sm text-muted-foreground">
-            Save this application number for future reference. You will receive
-            updates at the email address you provided.
-          </p>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-primary hover:underline font-medium mt-4"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to login
-          </Link>
+
+          <div className="px-8 py-6 space-y-5">
+            {/* Application number */}
+            <div className="rounded-xl bg-muted/50 p-4 text-center">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Application Number</p>
+              <p className="font-mono text-2xl font-bold tracking-wide text-primary">{a.id}</p>
+              <p className="text-xs text-muted-foreground mt-1">Save this for all future correspondence</p>
+            </div>
+
+            {/* Details grid */}
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Student Name</dt>
+                <dd className="font-medium mt-0.5">{a.name}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Program</dt>
+                <dd className="font-medium mt-0.5">{a.program}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Application Date</dt>
+                <dd className="font-medium mt-0.5">{appDate}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Payment Status</dt>
+                <dd className="mt-0.5">
+                  <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", statusColor("Payment Completed"))}>
+                    Completed
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Transaction ID</dt>
+                <dd className="font-mono text-xs font-medium mt-0.5">{a.transactionId}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Amount Paid</dt>
+                <dd className="font-medium mt-0.5">₹{a.feeAmount.toLocaleString("en-IN")}</dd>
+              </div>
+            </dl>
+
+            {/* Status badge */}
+            <div className="flex items-center gap-2 rounded-lg border px-4 py-3">
+              <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Status: Payment Completed</p>
+                <p className="text-xs text-muted-foreground">You will receive updates at {a.email}</p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2.5 pt-1">
+              <Button onClick={handleDownload} disabled={pdfLoading} className="w-full gap-2">
+                <Download className="h-4 w-4" />
+                {pdfLoading ? "Generating PDF…" : "Download Receipt (PDF)"}
+              </Button>
+              <div className="grid gap-2">
+                
+                <Button variant="ghost" asChild>
+                  <Link to="/">
+                    <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> Back to Login
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <p className="text-center text-xs text-muted-foreground">
+              You can download your receipt anytime from{" "}
+              <strong>My Applications</strong> in your Student Dashboard.
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // ── Payment screen ──────────────────────────────────────────────────────
   if (showPayment) {
     return (
       <div className="min-h-screen bg-background">
         <header className="border-b bg-card">
           <div className="mx-auto max-w-3xl flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-3">
-              <img
-                src={UNIVERSITY.logo}
-                alt=""
-                className="h-10 w-10 rounded-full object-cover object-left"
-              />
+              <img src={UNIVERSITY.logo} alt="" className="h-10 w-10 rounded-full object-cover object-left" />
               <div>
-                <div className="font-display text-sm font-semibold leading-tight">
-                  {UNIVERSITY.name}
-                </div>
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                  Admission Portal
-                </div>
+                <div className="font-display text-sm font-semibold leading-tight">{UNIVERSITY.name}</div>
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Admission Portal</div>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setShowPayment(false)}
-              className="text-sm text-muted-foreground hover:text-foreground transition flex items-center gap-1.5"
+              className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5"
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Back to application
             </button>
@@ -132,9 +326,23 @@ function ApplyPage() {
         <main className="mx-auto max-w-3xl px-6 py-8 space-y-6">
           <div>
             <h1 className="font-display text-2xl font-semibold">Application Fee Payment</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Complete payment to submit your admission application.
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">Complete payment to submit your admission application.</p>
+          </div>
+
+          {/* Review summary banner */}
+          <div className="rounded-xl border bg-muted/30 p-4 grid sm:grid-cols-3 gap-3 text-sm">
+            <div>
+              <p className="text-xs text-muted-foreground">Applicant</p>
+              <p className="font-medium">{form.name || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Program</p>
+              <p className="font-medium">{form.program || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Email</p>
+              <p className="font-medium truncate">{form.email || "—"}</p>
+            </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-5">
@@ -153,14 +361,7 @@ function ApplyPage() {
                         : "hover:border-muted-foreground/40",
                     )}
                   >
-                    <div
-                      className={cn(
-                        "grid h-10 w-10 shrink-0 place-items-center rounded-lg",
-                        paymentMethod === id
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                    >
+                    <div className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-lg", paymentMethod === id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <div>
@@ -170,14 +371,13 @@ function ApplyPage() {
                   </button>
                 ))}
               </div>
-
-              {paymentMethod === "upi" && (
+              {paymentMethod === "UPI" && (
                 <div className="space-y-1.5 pt-2">
                   <Label>UPI ID</Label>
                   <Input placeholder="yourname@upi" />
                 </div>
               )}
-              {paymentMethod === "card" && (
+              {paymentMethod === "Card" && (
                 <div className="grid gap-4 pt-2 md:grid-cols-2">
                   <div className="space-y-1.5 md:col-span-2">
                     <Label>Card Number</Label>
@@ -193,13 +393,11 @@ function ApplyPage() {
                   </div>
                 </div>
               )}
-              {paymentMethod === "netbanking" && (
+              {paymentMethod === "Net Banking" && (
                 <div className="space-y-1.5 pt-2">
                   <Label>Bank</Label>
                   <Select defaultValue="sbi">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your bank" />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select your bank" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="sbi">State Bank of India</SelectItem>
                       <SelectItem value="hdfc">HDFC Bank</SelectItem>
@@ -241,30 +439,19 @@ function ApplyPage() {
     );
   }
 
+  // ── Main application form ───────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background">
-      {/* Header bar */}
       <header className="border-b bg-card">
         <div className="mx-auto max-w-3xl flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <img
-              src={UNIVERSITY.logo}
-              alt=""
-              className="h-10 w-10 rounded-full object-cover object-left"
-            />
+            <img src={UNIVERSITY.logo} alt="" className="h-10 w-10 rounded-full object-cover object-left" />
             <div>
-              <div className="font-display text-sm font-semibold leading-tight">
-                {UNIVERSITY.name}
-              </div>
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                Admission Portal
-              </div>
+              <div className="font-display text-sm font-semibold leading-tight">{UNIVERSITY.name}</div>
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Admission Portal</div>
             </div>
           </div>
-          <Link
-            to="/"
-            className="text-sm text-muted-foreground hover:text-foreground transition flex items-center gap-1.5"
-          >
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5">
             <ArrowLeft className="h-3.5 w-3.5" /> Back to login
           </Link>
         </div>
@@ -272,12 +459,9 @@ function ApplyPage() {
 
       <main className="mx-auto max-w-3xl px-6 py-8 space-y-6">
         <div>
-          <h1 className="font-display text-2xl font-semibold">
-            Admission Application
-          </h1>
+          <h1 className="font-display text-2xl font-semibold">Admission Application</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Fill in your details to apply for admission to {UNIVERSITY.name}{" "}
-            programs.
+            Fill in your details to apply for admission to {UNIVERSITY.name} programs.
           </p>
         </div>
 
@@ -285,31 +469,13 @@ function ApplyPage() {
         <div className="flex items-center gap-2">
           {STEPS.map((s, i) => (
             <div key={s} className="flex items-center gap-2 flex-1">
-              <div
-                className={cn(
-                  "flex items-center gap-2 rounded-lg border p-3 flex-1 transition",
-                  i === step && "border-primary bg-primary/5 ring-1 ring-primary/30",
-                  i < step && "border-green-500 bg-green-500/5",
-                  i > step && "opacity-50",
-                )}
-              >
-                <span
-                  className={cn(
-                    "grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-medium",
-                    i < step
-                      ? "bg-green-500 text-white"
-                      : i === step
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground",
-                  )}
-                >
+              <div className={cn("flex items-center gap-2 rounded-lg border p-3 flex-1 transition", i === step && "border-primary bg-primary/5 ring-1 ring-primary/30", i < step && "border-green-500 bg-green-500/5", i > step && "opacity-50")}>
+                <span className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-medium", i < step ? "bg-green-500 text-white" : i === step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
                   {i < step ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
                 </span>
                 <span className="text-sm font-medium">{s}</span>
               </div>
-              {i < STEPS.length - 1 && (
-                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-              )}
+              {i < STEPS.length - 1 && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
             </div>
           ))}
         </div>
@@ -320,40 +486,38 @@ function ApplyPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>Full Name *</Label>
-                <Input placeholder="Enter your full name" />
+                <Input value={form.name} onChange={set("name")} placeholder="Enter your full name" />
               </div>
               <div className="space-y-1.5">
                 <Label>Email *</Label>
-                <Input type="email" placeholder="you@example.com" />
+                <Input type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" />
               </div>
               <div className="space-y-1.5">
                 <Label>Phone Number *</Label>
-                <Input type="tel" placeholder="+91 XXXXX XXXXX" />
+                <Input type="tel" value={form.phone} onChange={set("phone")} placeholder="+91 XXXXX XXXXX" />
               </div>
               <div className="space-y-1.5">
                 <Label>Date of Birth *</Label>
-                <Input type="date" />
+                <Input type="date" value={form.dateOfBirth} onChange={set("dateOfBirth")} />
               </div>
               <div className="space-y-1.5">
                 <Label>Gender *</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
+                <Select value={form.gender} onValueChange={(v) => setForm((f) => ({ ...f, gender: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Father's / Guardian's Name *</Label>
-                <Input placeholder="Enter guardian's name" />
+                <Input value={form.guardianName} onChange={set("guardianName")} placeholder="Enter guardian's name" />
               </div>
               <div className="space-y-1.5 md:col-span-2">
                 <Label>Address *</Label>
-                <Textarea placeholder="Enter your complete address" rows={3} />
+                <Textarea value={form.address} onChange={set("address")} placeholder="Enter your complete address" rows={3} />
               </div>
             </div>
           )}
@@ -362,102 +526,81 @@ function ApplyPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>10th Marks (%) *</Label>
-                <Input type="number" placeholder="e.g. 92" />
+                <Input type="number" value={form.tenthMarks} onChange={set("tenthMarks")} placeholder="e.g. 92" min="0" max="100" />
               </div>
               <div className="space-y-1.5">
                 <Label>12th Marks (%) *</Label>
-                <Input type="number" placeholder="e.g. 88" />
+                <Input type="number" value={form.twelfthMarks} onChange={set("twelfthMarks")} placeholder="e.g. 88" min="0" max="100" />
               </div>
               <div className="space-y-1.5 md:col-span-2">
                 <Label>Previous Institution *</Label>
-                <Input placeholder="Name of your school / college" />
+                <Input value={form.previousInstitution} onChange={set("previousInstitution")} placeholder="Name of your school / college" />
               </div>
               <div className="space-y-1.5">
                 <Label>Program Applied For *</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose program" />
-                  </SelectTrigger>
+                <Select value={form.program} onValueChange={(v) => setForm((f) => ({ ...f, program: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Choose program" /></SelectTrigger>
                   <SelectContent>
-                    {ADMISSION_PROGRAMS.map((program) => (
-                      <SelectItem key={program} value={program}>
-                        {program}
-                      </SelectItem>
+                    {ADMISSION_PROGRAMS.map((p) => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Entrance Exam Score</Label>
-                <Input type="number" placeholder="e.g. 285" />
+                <Input type="number" value={form.entranceExamScore} onChange={set("entranceExamScore")} placeholder="e.g. 285" />
               </div>
             </div>
           )}
 
           {step === 2 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Upload the following required documents:
-              </p>
+              <p className="text-sm text-muted-foreground">Upload the following required documents. All documents are required for application processing.</p>
               <div className="space-y-3">
                 {ADMISSION_REQUIRED_DOCS.map((doc) => (
-                  <div
-                    key={doc}
-                    className="flex items-center justify-between rounded-lg border p-4"
-                  >
+                  <div key={doc} className="flex items-center justify-between rounded-lg border p-4">
                     <div className="flex items-center gap-3">
                       {uploads[doc] ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                       ) : (
-                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
+                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
                       )}
-                      <span className="text-sm font-medium">{doc}</span>
+                      <div>
+                        <span className="text-sm font-medium">{doc}</span>
+                        {uploads[doc] && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            <FileText className="h-3 w-3 inline mr-1" />
+                            {doc.toLowerCase().replace(/\s+/g, "_")}.pdf · Uploaded
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <Button
                       size="sm"
                       variant={uploads[doc] ? "ghost" : "outline"}
-                      onClick={() =>
-                        setUploads((u) => ({ ...u, [doc]: !u[doc] }))
-                      }
+                      onClick={() => setUploads((u) => ({ ...u, [doc]: !u[doc] }))}
                     >
                       {uploads[doc] ? (
-                        <>
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-green-500" />{" "}
-                          Uploaded
-                        </>
+                        <><X className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" /> Remove</>
                       ) : (
-                        <>
-                          <Upload className="h-3.5 w-3.5 mr-1.5" /> Upload
-                        </>
+                        <><Upload className="h-3.5 w-3.5 mr-1.5" /> Upload</>
                       )}
                     </Button>
                   </div>
                 ))}
               </div>
               <div className="flex items-start gap-2 pt-2">
-                <Checkbox
-                  id="declare"
-                  checked={declared}
-                  onCheckedChange={(v) => setDeclared(v === true)}
-                />
-                <label
-                  htmlFor="declare"
-                  className="text-sm text-muted-foreground leading-tight"
-                >
-                  I declare that all information provided is accurate and
-                  complete. I understand that any false information may lead to
-                  cancellation of my admission.
+                <Checkbox id="declare" checked={declared} onCheckedChange={(v) => setDeclared(v === true)} />
+                <label htmlFor="declare" className="text-sm text-muted-foreground leading-tight">
+                  I declare that all information provided is accurate and complete. I understand that any false information may lead to cancellation of my admission.
                 </label>
               </div>
             </div>
           )}
 
           <div className="flex justify-between mt-6 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={() => setStep((s) => s - 1)}
-              disabled={step === 0}
-            >
+            <Button variant="outline" onClick={() => setStep((s) => s - 1)} disabled={step === 0}>
               <ChevronLeft className="h-4 w-4 mr-1" /> Previous
             </Button>
             {step < 2 ? (
@@ -466,7 +609,7 @@ function ApplyPage() {
               </Button>
             ) : (
               <Button onClick={handleSubmit} disabled={!declared}>
-                Submit Application
+                <ShieldCheck className="h-4 w-4 mr-1.5" /> Proceed to Payment
               </Button>
             )}
           </div>
