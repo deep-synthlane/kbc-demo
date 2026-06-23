@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   CheckCircle2,
   Upload,
@@ -46,6 +46,8 @@ import {
   type StoredApplication,
 } from "@/lib/applicationStore";
 import { downloadReceipt } from "@/lib/pdfReceipt";
+import { formatFileSize } from "@/lib/materialUpload";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/apply")({
   head: () => ({
@@ -61,6 +63,24 @@ const PAYMENT_METHODS = [
   { id: "Net Banking", label: "Net Banking", icon: Building2, detail: "All major Indian banks" },
 ] as const;
 type PaymentMethod = (typeof PAYMENT_METHODS)[number]["id"];
+
+type DocUpload = { fileName: string; fileSize: string };
+
+const DOC_ACCEPT: Record<(typeof ADMISSION_REQUIRED_DOCS)[number], { accept: string; extensions: string[] }> = {
+  "10th Marksheet": { accept: ".pdf,application/pdf", extensions: [".pdf"] },
+  "12th Marksheet": { accept: ".pdf,application/pdf", extensions: [".pdf"] },
+  "Passport Photo": { accept: ".jpg,.jpeg,.png,image/*", extensions: [".jpg", ".jpeg", ".png"] },
+  "Government ID Proof": { accept: ".pdf,.jpg,.jpeg,.png", extensions: [".pdf", ".jpg", ".jpeg", ".png"] },
+};
+
+function fileMatchesDoc(file: File, doc: (typeof ADMISSION_REQUIRED_DOCS)[number]) {
+  const ext = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
+  const cfg = DOC_ACCEPT[doc];
+  if (cfg.extensions.includes(ext)) return true;
+  if (doc === "Passport Photo" && file.type.startsWith("image/")) return true;
+  if (doc === "Government ID Proof" && (file.type.startsWith("image/") || file.type === "application/pdf")) return true;
+  return false;
+}
 
 interface FormData {
   name: string;
@@ -95,7 +115,9 @@ function statusColor(s: string) {
 function ApplyPage() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
-  const [uploads, setUploads] = useState<Record<string, boolean>>({});
+  const [uploads, setUploads] = useState<Partial<Record<(typeof ADMISSION_REQUIRED_DOCS)[number], DocUpload>>>({});
+  const [pendingDoc, setPendingDoc] = useState<(typeof ADMISSION_REQUIRED_DOCS)[number] | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [declared, setDeclared] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("UPI");
@@ -107,6 +129,38 @@ function ApplyPage() {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm((f) => ({ ...f, [field]: e.target.value }));
   }
+
+  function openDocUpload(doc: (typeof ADMISSION_REQUIRED_DOCS)[number]) {
+    setPendingDoc(doc);
+    fileInputRef.current?.click();
+  }
+
+  function handleDocFileSelect(file: File | null) {
+    if (!file || !pendingDoc) return;
+    if (!fileMatchesDoc(file, pendingDoc)) {
+      toast.error(`Please upload a valid file for ${pendingDoc}`);
+      setPendingDoc(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    setUploads((u) => ({
+      ...u,
+      [pendingDoc]: { fileName: file.name, fileSize: formatFileSize(file.size) },
+    }));
+    toast.success(`${pendingDoc} uploaded`);
+    setPendingDoc(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removeDoc(doc: (typeof ADMISSION_REQUIRED_DOCS)[number]) {
+    setUploads((u) => {
+      const next = { ...u };
+      delete next[doc];
+      return next;
+    });
+  }
+
+  const allDocsUploaded = ADMISSION_REQUIRED_DOCS.every((doc) => uploads[doc]);
 
   function handleSubmit() {
     setShowPayment(true);
@@ -143,7 +197,7 @@ function ApplyPage() {
         documents: ADMISSION_REQUIRED_DOCS.map((name) => ({
           name,
           uploaded: !!uploads[name],
-          fileName: uploads[name] ? `${name.toLowerCase().replace(/\s+/g, "_")}_${appId}.pdf` : undefined,
+          fileName: uploads[name]?.fileName,
         })),
         status: "Payment Completed",
         auditLog: [
@@ -557,6 +611,13 @@ function ApplyPage() {
           {step === 2 && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">Upload the following required documents. All documents are required for application processing.</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept={pendingDoc ? DOC_ACCEPT[pendingDoc].accept : undefined}
+                onChange={(e) => handleDocFileSelect(e.target.files?.[0] ?? null)}
+              />
               <div className="space-y-3">
                 {ADMISSION_REQUIRED_DOCS.map((doc) => (
                   <div key={doc} className="flex items-center justify-between rounded-lg border p-4">
@@ -571,7 +632,12 @@ function ApplyPage() {
                         {uploads[doc] && (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             <FileText className="h-3 w-3 inline mr-1" />
-                            {doc.toLowerCase().replace(/\s+/g, "_")}.pdf · Uploaded
+                            {uploads[doc]!.fileName} · {uploads[doc]!.fileSize}
+                          </p>
+                        )}
+                        {!uploads[doc] && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Accepts {DOC_ACCEPT[doc].extensions.join(", ")}
                           </p>
                         )}
                       </div>
@@ -579,7 +645,7 @@ function ApplyPage() {
                     <Button
                       size="sm"
                       variant={uploads[doc] ? "ghost" : "outline"}
-                      onClick={() => setUploads((u) => ({ ...u, [doc]: !u[doc] }))}
+                      onClick={() => (uploads[doc] ? removeDoc(doc) : openDocUpload(doc))}
                     >
                       {uploads[doc] ? (
                         <><X className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" /> Remove</>
@@ -608,7 +674,7 @@ function ApplyPage() {
                 Next <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Button onClick={handleSubmit} disabled={!declared}>
+              <Button onClick={handleSubmit} disabled={!declared || !allDocsUploaded}>
                 <ShieldCheck className="h-4 w-4 mr-1.5" /> Proceed to Payment
               </Button>
             )}

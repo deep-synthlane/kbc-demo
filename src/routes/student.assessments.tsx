@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, type DragEvent } from "react";
 import { FileText, Upload, MessageSquare, HelpCircle, Clock, BookOpen, CheckCircle2 } from "lucide-react";
 import {
   Tabs,
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
@@ -37,6 +36,8 @@ import {
 import { PageHeader } from "@/components/RoleShell";
 import { ASSIGNMENTS, QUIZ_RESULT } from "@/lib/mockData";
 import { useCourses } from "@/lib/courseStore";
+import { formatFileSize, simulateUpload } from "@/lib/materialUpload";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/student/assessments")({
@@ -60,10 +61,25 @@ type QuizInfo = {
   unitTitle: string;
 };
 
+const ASSIGNMENT_ACCEPT = {
+  accept: ".pdf,.doc,.docx,.zip",
+  extensions: [".pdf", ".doc", ".docx", ".zip"],
+};
+
+function fileMatchesAssignment(file: File) {
+  const ext = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
+  return ASSIGNMENT_ACCEPT.extensions.includes(ext);
+}
+
 function Assessments() {
   const { courses } = useCourses();
   const [assignments, setAssignments] = useState(ASSIGNMENTS.map((a) => ({ ...a })));
   const [submitDialog, setSubmitDialog] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const submitTarget = assignments.find((a) => a.id === submitDialog);
 
   const allQuizzes = useMemo<QuizInfo[]>(() => {
@@ -104,13 +120,52 @@ function Assessments() {
     ? Math.round(chartData.reduce((s, d) => s + (d.score / d.total) * 100, 0) / chartData.length)
     : 0;
 
-  function handleSubmitAssignment() {
+  function resetSubmitForm() {
+    setSelectedFile(null);
+    setUploadProgress(0);
+    setSubmitting(false);
+    setDragOver(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function handleFileSelect(file: File | null) {
+    if (!file) return;
+    if (!fileMatchesAssignment(file)) {
+      toast.error("Please upload a PDF, DOC, DOCX, or ZIP file");
+      return;
+    }
+    setSelectedFile(file);
+  }
+
+  function onDrop(e: DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    handleFileSelect(e.dataTransfer.files[0] ?? null);
+  }
+
+  async function handleSubmitAssignment() {
     if (!submitDialog) return;
-    setAssignments((prev) =>
-      prev.map((a) => (a.id === submitDialog ? { ...a, status: "Submitted" } : a)),
-    );
-    setSubmitDialog(null);
-    toast.success("Assignment submitted successfully");
+    if (!selectedFile) {
+      toast.error("Please select a file to submit");
+      return;
+    }
+
+    setSubmitting(true);
+    setUploadProgress(0);
+
+    try {
+      await simulateUpload(setUploadProgress);
+      setAssignments((prev) =>
+        prev.map((a) => (a.id === submitDialog ? { ...a, status: "Submitted" } : a)),
+      );
+      setSubmitDialog(null);
+      resetSubmitForm();
+      toast.success(`Assignment submitted — ${selectedFile.name}`);
+    } catch {
+      toast.error("Submission failed. Please try again.");
+      setSubmitting(false);
+      setUploadProgress(0);
+    }
   }
 
   return (
@@ -350,7 +405,15 @@ function Assessments() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!submitDialog} onOpenChange={(v) => !v && setSubmitDialog(null)}>
+      <Dialog
+        open={!!submitDialog}
+        onOpenChange={(v) => {
+          if (!v) {
+            setSubmitDialog(null);
+            resetSubmitForm();
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Submit Assignment</DialogTitle>
@@ -358,16 +421,52 @@ function Assessments() {
           {submitTarget && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">{submitTarget.title} · {submitTarget.course}</p>
-              <div className="rounded-lg border-2 border-dashed p-6 text-center text-sm text-muted-foreground">
+              <div
+                role="button"
+                tabIndex={0}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={onDrop}
+                onClick={() => !submitting && fileInputRef.current?.click()}
+                onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
+                className={cn(
+                  "rounded-lg border-2 border-dashed p-6 text-center text-sm transition cursor-pointer",
+                  dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/30 text-muted-foreground",
+                  submitting && "pointer-events-none opacity-60",
+                )}
+              >
                 <Upload className="h-6 w-6 mx-auto mb-2" />
-                Drag & drop your file here
+                {selectedFile ? (
+                  <>
+                    <p className="font-medium text-foreground">{selectedFile.name}</p>
+                    <p className="text-xs mt-1">{formatFileSize(selectedFile.size)} · Click to replace</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-medium">Drag & drop your file here</p>
+                    <p className="text-xs mt-1">PDF, DOC, DOCX, or ZIP</p>
+                  </>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  accept={ASSIGNMENT_ACCEPT.accept}
+                  disabled={submitting}
+                  onChange={(e) => handleFileSelect(e.target.files?.[0] ?? null)}
+                />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium">File name</label>
-                <Input defaultValue="assignment_submission.pdf" />
-              </div>
-              <Button className="w-full" onClick={handleSubmitAssignment}>
-                Submit Assignment
+              {submitting && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Uploading…</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <Progress value={uploadProgress} className="h-2" />
+                </div>
+              )}
+              <Button className="w-full" disabled={submitting || !selectedFile} onClick={handleSubmitAssignment}>
+                {submitting ? "Submitting…" : "Submit Assignment"}
               </Button>
             </div>
           )}

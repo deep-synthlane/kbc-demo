@@ -1,15 +1,10 @@
-import { useRef, useState, type DragEvent } from "react";
+import { useRef, useState, useEffect, type DragEvent } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -54,6 +49,12 @@ export function UploadMaterialDialog({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setUnitId(defaultUnitId ?? units[0]?.id ?? "");
+    }
+  }, [open, defaultUnitId, units]);
 
   function resetForm() {
     setUnitId(defaultUnitId ?? units[0]?.id ?? "");

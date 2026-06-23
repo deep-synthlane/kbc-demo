@@ -16,6 +16,7 @@ import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AiIndexRouteImport } from './routes/ai.index'
 import { Route as TeacherTimetableRouteImport } from './routes/teacher.timetable'
 import { Route as TeacherLiveClassesRouteImport } from './routes/teacher.live-classes'
 import { Route as TeacherExaminationsRouteImport } from './routes/teacher.examinations'
@@ -92,6 +93,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AiIndexRoute = AiIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AiRoute,
 } as any)
 const TeacherTimetableRoute = TeacherTimetableRouteImport.update({
   id: '/timetable',
@@ -342,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/teacher/examinations': typeof TeacherExaminationsRoute
   '/teacher/live-classes': typeof TeacherLiveClassesRoute
   '/teacher/timetable': typeof TeacherTimetableRoute
+  '/ai/': typeof AiIndexRoute
   '/admin/students/$studentId': typeof AdminStudentsStudentIdRoute
   '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
   '/student/quiz/$quizId': typeof StudentQuizQuizIdRoute
@@ -352,7 +359,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/ai': typeof AiRouteWithChildren
   '/apply': typeof ApplyRoute
   '/staff': typeof StaffRouteWithChildren
   '/student': typeof StudentRouteWithChildren
@@ -390,6 +396,7 @@ export interface FileRoutesByTo {
   '/teacher/examinations': typeof TeacherExaminationsRoute
   '/teacher/live-classes': typeof TeacherLiveClassesRoute
   '/teacher/timetable': typeof TeacherTimetableRoute
+  '/ai': typeof AiIndexRoute
   '/admin/students/$studentId': typeof AdminStudentsStudentIdRoute
   '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
   '/student/quiz/$quizId': typeof StudentQuizQuizIdRoute
@@ -441,6 +448,7 @@ export interface FileRoutesById {
   '/teacher/examinations': typeof TeacherExaminationsRoute
   '/teacher/live-classes': typeof TeacherLiveClassesRoute
   '/teacher/timetable': typeof TeacherTimetableRoute
+  '/ai/': typeof AiIndexRoute
   '/admin/students/$studentId': typeof AdminStudentsStudentIdRoute
   '/student/courses/$courseId': typeof StudentCoursesCourseIdRoute
   '/student/quiz/$quizId': typeof StudentQuizQuizIdRoute
@@ -493,6 +501,7 @@ export interface FileRouteTypes {
     | '/teacher/examinations'
     | '/teacher/live-classes'
     | '/teacher/timetable'
+    | '/ai/'
     | '/admin/students/$studentId'
     | '/student/courses/$courseId'
     | '/student/quiz/$quizId'
@@ -503,7 +512,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
-    | '/ai'
     | '/apply'
     | '/staff'
     | '/student'
@@ -541,6 +549,7 @@ export interface FileRouteTypes {
     | '/teacher/examinations'
     | '/teacher/live-classes'
     | '/teacher/timetable'
+    | '/ai'
     | '/admin/students/$studentId'
     | '/student/courses/$courseId'
     | '/student/quiz/$quizId'
@@ -591,6 +600,7 @@ export interface FileRouteTypes {
     | '/teacher/examinations'
     | '/teacher/live-classes'
     | '/teacher/timetable'
+    | '/ai/'
     | '/admin/students/$studentId'
     | '/student/courses/$courseId'
     | '/student/quiz/$quizId'
@@ -659,6 +669,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/ai/': {
+      id: '/ai/'
+      path: '/'
+      fullPath: '/ai/'
+      preLoaderRoute: typeof AiIndexRouteImport
+      parentRoute: typeof AiRoute
     }
     '/teacher/timetable': {
       id: '/teacher/timetable'
@@ -993,6 +1010,7 @@ interface AiRouteChildren {
   AiInterviewRoute: typeof AiInterviewRoute
   AiMeetingRoute: typeof AiMeetingRoute
   AiProctoringRoute: typeof AiProctoringRoute
+  AiIndexRoute: typeof AiIndexRoute
 }
 
 const AiRouteChildren: AiRouteChildren = {
@@ -1000,6 +1018,7 @@ const AiRouteChildren: AiRouteChildren = {
   AiInterviewRoute: AiInterviewRoute,
   AiMeetingRoute: AiMeetingRoute,
   AiProctoringRoute: AiProctoringRoute,
+  AiIndexRoute: AiIndexRoute,
 }
 
 const AiRouteWithChildren = AiRoute._addFileChildren(AiRouteChildren)

@@ -252,13 +252,13 @@ function SidebarInner({
       {canAccessAi(role) && !onAiSection && (
         <div className="border-t border-sidebar-border p-3">
           <Link
-            to="/ai/interview"
+            to="/ai/proctoring"
             className="flex items-center gap-3 rounded-md bg-sidebar-primary/10 px-3 py-2.5 text-sm text-sidebar-primary-foreground hover:bg-sidebar-primary/20 transition"
           >
             <Sparkles className="h-4 w-4 text-sidebar-primary" />
             <div className="flex-1">
               <div className="font-medium text-sidebar-foreground">AI Smart Features</div>
-              <div className="text-[11px] text-sidebar-foreground/60">Interview · Proctoring</div>
+              <div className="text-[11px] text-sidebar-foreground/60">Proctoring · Interview</div>
             </div>
           </Link>
         </div>
